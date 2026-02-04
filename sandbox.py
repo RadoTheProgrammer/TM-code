@@ -1,7 +1,4 @@
-from itertools import cycle
+from pyspark import pandas as ps
 
-serveurs = cycle(["S1", "S2", "S3"])
-
-def attribuer_tache(tache):
-    serveur = next(serveurs)
-    print(f"{tache} → {serveur}")
+psdf = ps.DataFrame({"age": [5, 5, 2, 2],
+        "name": ["Bob", "Bob", "Alice", "Alice"]}).set_index("age")
