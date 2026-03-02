@@ -5,6 +5,7 @@ TM_FILE = "Donnees_TMs/Année 1/Liste sujets TM + jauge_année 1.xlsx"
 
 
 import random
+from statistics import mean
 import pandas as pd
 
 
@@ -13,8 +14,12 @@ df_grid_orig = pd.read_csv(INPUT_FILE,index_col=0)
 df_tm = pd.read_excel(TM_FILE,index_col=0)
 df_tm = df_tm.iloc[:-1] # enlever TM libre
 
+best_mean = 0
+best_std = 0
 N_TRIES = 1000
+results = {"Id":[],"Mean":[],"Std":[]}
 def generate():
+    global max_l2,best_mean,best_std
     # Génère une répartition aléatoire, erreur si ça échoue
     df_grid = df_grid_orig.copy()
     decision_data = {"Id": [], "Choice": [], "ChoiceWeight": []}
@@ -23,7 +28,7 @@ def generate():
         mask = df_grid[str(i_tm)] > 0
 
         result = df_grid[mask]
-        result.choic
+        #result.choic
         l = len(result)
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
@@ -42,27 +47,36 @@ def generate():
                 decision_data["Id"].append(i_eleve)
                 decision_data["Choice"].append(i_tm)
                 decision_data["ChoiceWeight"].append(choice_weight)
-                #df_grid.loc[i_eleve] = 0
-                #df_grid.at[i_eleve,i_tm] = choice_weight
+                df_grid.loc[i_eleve] = 0
+                df_grid.at[i_eleve,str(i_tm)] = choice_weight
             else:
                 df_grid.at[i_eleve,str(i_tm)] = 0
                 pass
             pass
-        df_grid.drop(selected.index,inplace=True)
+        #df_grid.drop(selected.index,inplace=True)
         pass
-    l1,l2 = len(df_grid), len(decision_data["Choice"])
-    #print(l1,l2,l1+l2)
+
+
     df_decision_data = pd.DataFrame(decision_data)
-    df_decision_data.sort_values(by=["Id"],inplace=True)
-    return l2
+    if len(df_grid)==len(df_decision_data): # Succès
+        df_decision_data.to_csv(f"results/{i_try}.csv",index=False)
+        mean = df_decision_data["ChoiceWeight"].mean()
+        std = df_decision_data["ChoiceWeight"].std()
+        results["Id"].append(i_try)
+        results["Mean"].append(mean)
+        results["Std"].append(std)
+        print(f"Try {i_try}: mean={mean}, std={std}")
+
+        pass
+    
     if len(df_grid)>0:
         return False # échec
     return True
     pass
-generate()
+
 max_l2 = 0
 for i_try in range(N_TRIES):
     l2 = generate()
-    print(l2)
-    if l2>max_l2:
-        max_l2 = l2
+
+df_results = pd.DataFrame(results)
+df_results.to_csv("results.csv",index=False)
