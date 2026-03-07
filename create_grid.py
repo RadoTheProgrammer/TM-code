@@ -5,10 +5,10 @@ Crée la matrice d envie
 N_TM = 35
 print("hello")
 import pandas as pd
-
+import numpy as np
 df = pd.read_excel("Donnees_TMs/Année 1/TM année 1_voeux élèves.xlsx",index_col=0)
 
-df_grid = pd.DataFrame(0,index=df.index,columns=range(1,N_TM+1))
+df_grid = pd.DataFrame(np.nan,index=df.index,columns=range(1,N_TM+1))
 gen_col = [0]*N_TM
 data = {}
 for nom_eleve,eleve in df.iterrows():

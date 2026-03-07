@@ -30,6 +30,8 @@ def generate():
         result = df_grid[mask]
         #result.choic
         l = len(result)
+        print(result.mean())
+        weights = result[str(i_tm)] / result.mean()
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
         n = int(tm["Nombre maximal travaux"])
