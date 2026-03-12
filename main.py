@@ -55,7 +55,11 @@ def generate():
         
 
         n = int(tm["Nombre maximal travaux"])
-
+        m = tm["Nombre minimal travaux"]
+        if not pd.isna(m) and l<m:
+            #problems.append((i_tm,f"Not enough: {l}<{m}"))
+            pass
+        #print(pd.isna(m))
         if n<l:
             if MODE in ("sum","none"):
                 forced_bool = b==0
@@ -76,7 +80,7 @@ def generate():
                 selected2 = result.sample(n-len(forced),weights=weights)
                 selected = pd.concat([forced,selected2])
             else: # PROBLEM !!!!
-                problems.append((i_tm,n_to_assign))
+                problems.append((i_tm,f"Too many: {len(forced)}>{n}"))
                 selected = forced
         else:
             selected = result
@@ -90,7 +94,7 @@ def generate():
                 decision_data["Id"].append(i_eleve)
                 decision_data["Choice"].append(i_tm)
                 decision_data["ChoiceWeight"].append(choice_weight)
-                df_grid.loc[i_eleve] = 0 # type: ignore
+                df_grid.loc[i_eleve] = np.nan # type: ignore
                 df_grid.at[i_eleve,str(i_tm)] = choice_weight
             else:
                 df_grid.at[i_eleve,str(i_tm)] = np.nan
