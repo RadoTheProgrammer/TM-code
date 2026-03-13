@@ -1,34 +1,34 @@
-Maître c,Langue,Individuel/groupe/ indifférent,Nombre minimal travaux,Nombre maximal travaux
-,Français,Indifférent,3.0,10
-,F/A,Indifférent,,6 (8)
-,Français,groupe,3.0,5
-,Fr/Ang,Indifférent,1.0,8
-,Anglais,individuel,2.0,8
-,Français,Indifférent,2.0,16
-,Français,Indifférent,2.0,12
-,Français,Indifférent,4.0,8
-,Français,Indifférent,,8
-,Anglais,individuel,2.0,4
-,Français,indifférent,,6
-,Français,Indifférent,,8
-,Fr/Ang,groupe (év. individuel),8.0,12
-,Français,individuel,2.0,6
-,Fr/Ang,indifférent,6.0,10
-,Français,indifférent,8.0,20
-,All,Indifférent,2.0,4
-,All,indifférent,2.0,8
-,Français,indifférent,1.0,2
-,Français,groupe (év. individuel),3.0,8
-,Français,Indifférent,1.0,8
-,Français,Indifférent,,8
-,Français,individuel,,8
-,Français,individuel,1.0,10
-,Français,Indifférent,1.0,4
-,Fr/Ang,Indifférent,1.0,8
-,FR/Esp,Groupes de 2,2.0,5
-,Fr/Ang,Groupes de 2,2.0,4
-,Anglais,Indifférent,1.0,7
-,Français,Indifférent,,
-,Fr/Ang,Indifférent,4.0,10
-,Français,Groupes de 2,3.0,6
-,,,,
+N° TM,Maître c,Langue,Individuel/groupe/ indifférent,Nombre minimal travaux,Nombre maximal travaux
+1,,Français,Indifférent,3.0,10
+2,,F/A,Indifférent,,6 (8)
+3,,Français,groupe,3.0,5
+4,,Fr/Ang,Indifférent,1.0,8
+5,,Anglais,individuel,2.0,8
+6,,Français,Indifférent,2.0,16
+7,,Français,Indifférent,2.0,12
+8,,Français,Indifférent,4.0,8
+9,,Français,Indifférent,,8
+10,,Anglais,individuel,2.0,4
+11,,Français,indifférent,,6
+12,,Français,Indifférent,,8
+13,,Fr/Ang,groupe (év. individuel),8.0,12
+14,,Français,individuel,2.0,6
+15,,Fr/Ang,indifférent,6.0,10
+16,,Français,indifférent,8.0,20
+17,,All,Indifférent,2.0,4
+18,,All,indifférent,2.0,8
+19,,Français,indifférent,1.0,2
+20,,Français,groupe (év. individuel),3.0,8
+21,,Français,Indifférent,1.0,8
+22,,Français,Indifférent,,8
+23,,Français,individuel,,8
+24,,Français,individuel,1.0,10
+25,,Français,Indifférent,1.0,4
+26,,Fr/Ang,Indifférent,1.0,8
+27,,FR/Esp,Groupes de 2,2.0,5
+28,,Fr/Ang,Groupes de 2,2.0,4
+29,,Anglais,Indifférent,1.0,7
+30,,Français,Indifférent,,
+31,,Fr/Ang,Indifférent,4.0,10
+32,,Français,Groupes de 2,3.0,6
+33,,,,,
