@@ -1,7 +1,7 @@
 INPUT_FILE = "grid.csv"
 OUTPUT_DIR = "results2-none"
 OUTPUT_FILE = f"{OUTPUT_DIR}/data.csv"
-TM_FILE = "Donnees_TMs/Année 1/Liste sujets TM + jauge_année 1.xlsx"
+TM_FILE = "Donnees_TMs/Année 2/Liste sujets TM + jauge_année 2.xlsx"
 N_TRIES = 256
 MODE = "none" # "sum" ou "mean" ou "none"
 

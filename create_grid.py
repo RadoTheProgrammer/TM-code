@@ -2,11 +2,11 @@
 Crée la matrice d envie
 """
 
-N_TM = 35
-print("hello")
+N_TM = 33
+
 import pandas as pd
 import numpy as np
-df = pd.read_excel("Donnees_TMs/Année 1/TM année 1_voeux élèves.xlsx",index_col=0)
+df = pd.read_excel("Donnees_TMs/Année 2/TM année 2_voeux élèves.xlsx",index_col=0)
 
 df_grid = pd.DataFrame(np.nan,index=df.index,columns=range(1,N_TM+1))
 data_duo = []
