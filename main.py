@@ -1,7 +1,7 @@
 INPUT_FILE = "grid.csv"
 OUTPUT_DIR = "results2-none"
 OUTPUT_FILE = f"{OUTPUT_DIR}/data.csv"
-TM_FILE = "Donnees_TMs/Année 2/Liste sujets TM + jauge_année 2.xlsx"
+TM_FILE = "Donnees_TMs/Annee_2_liste_sujets.csv"
 N_TRIES = 256
 MODE = "none" # "sum" ou "mean" ou "none"
 
@@ -14,7 +14,7 @@ import numpy as np
 
 df_grid_orig = pd.read_csv(INPUT_FILE,index_col=0)
 
-df_tm = pd.read_excel(TM_FILE,index_col=0)
+df_tm = pd.read_csv(TM_FILE,index_col=0)
 df_tm = df_tm.iloc[:-1] # enlever TM libre
 
 
@@ -105,6 +105,11 @@ def generate():
 
 
     df_decision_data = pd.DataFrame(decision_data)
+    for nom_eleve in df_grid.index:
+        if nom_eleve not in decision_data["Id"]:
+            print(f"Nom eleve: {nom_eleve}")
+
+    print(df_decision_data)
     if len(df_grid)==len(df_decision_data): # Succès
         df_decision_data.to_csv(f"{OUTPUT_DIR}/r{i_try}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
