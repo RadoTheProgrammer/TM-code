@@ -1,5 +1,5 @@
 
-DIR = "Donnees_TMs/Annee_2"
+DIR = "Donnees_TMs/Annee_1"
 INPUT_FILE = f"{DIR}/grid.csv"
 OUTPUT_DIR = f"{DIR}/results-none"
 OUTPUT_FILE = f"{DIR}/results.csv"
@@ -90,7 +90,8 @@ def generate():
         #print(selected)
         #print(result)
         for i_eleve,eleve in result.iterrows():
-
+            if i_eleve==51:
+                pass
             if i_eleve in selected.index:
                 choice_weight = eleve[str(i_tm)]
                 decision_data["Id"].append(i_eleve)
@@ -107,9 +108,9 @@ def generate():
 
 
     df_decision_data = pd.DataFrame(decision_data)
-    # for nom_eleve in df_grid.index:
-    #     if nom_eleve not in decision_data["Id"]:
-    #         print(f"Nom eleve: {nom_eleve}")
+    for nom_eleve in df_grid.index:
+        if nom_eleve not in decision_data["Id"]:
+            print(f"Nom eleve: {nom_eleve}")
 
     #print(df_decision_data)
     if len(df_grid)==len(df_decision_data): # Succès

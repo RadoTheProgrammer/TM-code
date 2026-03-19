@@ -2,9 +2,9 @@
 Crée la matrice d envie
 """
 
-N_TM = 33
+N_TM = 35
 DUO_SEP = " + "
-DIR = "Donnees_TMs/Annee_2"
+DIR = "Donnees_TMs/Annee_1"
 import pandas as pd
 import numpy as np
 df = pd.read_csv(f"{DIR}/voeux_eleves.csv",index_col=0)
@@ -22,7 +22,7 @@ for nom_eleve,eleve in df.iterrows():
             df_grid.drop(nom_eleve, inplace=True)
             break
         choix = int(choix[2:])
-        if choix==N_TM: # TM libre
+        if choix>=N_TM: # TM libre
             continue
         ind_ou_duo = eleve[f"Individuel ou en duo{indice}"]
         if ind_ou_duo=="Duo":
@@ -47,14 +47,15 @@ for nom_eleve,eleve in df.iterrows():
 
 
         df_grid.at[nom_eleve,choix] = 4-nchoix
-new_data_duo = []
-for duoc in data_duo: #duoc: duo, choix
-    if duoc in new_data_duo:
-        continue
-    new_data_duo.append(duoc)
-    count = data_duo.count(duoc)
+# new_data_duo = []
+# for duoc in data_duo: #duoc: duo, choix
+#     if duoc in new_data_duo:
+#         continue
+#     new_data_duo.append(duoc)
+#     count = data_duo.count(duoc)
 
-    assert count == duoc[0].count(DUO_SEP)+1
-df_duo = pd.DataFrame(data_duo, columns=["Duo","Choix"])
-df_duo.to_csv(f"{DIR}/duo.csv",index=False)
+#     assert count == duoc[0].count(DUO_SEP)+1
+# df_duo = pd.DataFrame(data_duo, columns=["Duo","Choix"])
+# df_duo.to_csv(f"{DIR}/duo.csv",index=False)
+
 df_grid.to_csv(f"{DIR}/grid.csv")
