@@ -1,7 +1,9 @@
-INPUT_FILE = "grid.csv"
-OUTPUT_DIR = "results2-none"
-OUTPUT_FILE = f"{OUTPUT_DIR}/data.csv"
-TM_FILE = "Donnees_TMs/Annee_2_liste_sujets.csv"
+
+DIR = "Donnees_TMs/Annee_2"
+INPUT_FILE = f"{DIR}/grid.csv"
+OUTPUT_DIR = f"{DIR}/results-none"
+OUTPUT_FILE = f"{DIR}/results.csv"
+TM_FILE = f"{DIR}/liste_sujets.csv"
 N_TRIES = 256
 MODE = "none" # "sum" ou "mean" ou "none"
 
@@ -105,11 +107,11 @@ def generate():
 
 
     df_decision_data = pd.DataFrame(decision_data)
-    for nom_eleve in df_grid.index:
-        if nom_eleve not in decision_data["Id"]:
-            print(f"Nom eleve: {nom_eleve}")
+    # for nom_eleve in df_grid.index:
+    #     if nom_eleve not in decision_data["Id"]:
+    #         print(f"Nom eleve: {nom_eleve}")
 
-    print(df_decision_data)
+    #print(df_decision_data)
     if len(df_grid)==len(df_decision_data): # Succès
         df_decision_data.to_csv(f"{OUTPUT_DIR}/r{i_try}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()

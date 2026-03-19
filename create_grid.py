@@ -4,9 +4,10 @@ Crée la matrice d envie
 
 N_TM = 33
 DUO_SEP = " + "
+DIR = "Donnees_TMs/Annee_2"
 import pandas as pd
 import numpy as np
-df = pd.read_csv(r"Donnees_TMs\Annee_1_voeux_eleves.csv",index_col=0)
+df = pd.read_csv(f"{DIR}/voeux_eleves.csv",index_col=0)
 df.index = df.index.astype(str)
 print(df.dtypes)
 df_grid = pd.DataFrame(np.nan,index=df.index,columns=range(1,N_TM+1))
@@ -55,5 +56,5 @@ for duoc in data_duo: #duoc: duo, choix
 
     assert count == duoc[0].count(DUO_SEP)+1
 df_duo = pd.DataFrame(data_duo, columns=["Duo","Choix"])
-df_duo.to_csv("duo.csv",index=False)
-df_grid.to_csv("grid.csv")
+df_duo.to_csv(f"{DIR}/duo.csv",index=False)
+df_grid.to_csv(f"{DIR}/grid.csv")
