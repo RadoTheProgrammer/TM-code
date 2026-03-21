@@ -177,7 +177,7 @@ Elève,Choix 1,Langue (si choix proposé),Individuel ou en duo,Choix 1 en duo av
 176,TM10,Français,Duo,8,TM11,Français,Duo,8,TM22,Français,Duo,8,
 177,TM35,Français,Individuel,,0,0,0,,0,0,0, ,
 178,TM10,Français,Individuel,,0,0,0,,0,0,0, ,
-179,TM07,Français,Individuel,,TM04,Français,Duo,180,TM10,Français,Duo,100,
+179,TM07,Français,Individuel,,TM04,Français,Duo,180 + 222,TM10,Français,Duo,100,
 180,TM04,Français,Duo,222 + 179,TM07,Français,Duo,222,TM34,Français,Duo,222,
 181,TM13,Français,Individuel,,0,0,0,,0,0,0, ,
 182,TM16,0,Individuel,,0,0,0,,0,0,0, ,

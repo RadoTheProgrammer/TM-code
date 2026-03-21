@@ -4,6 +4,7 @@ INPUT_FILE = f"{DIR}/grid.csv"
 OUTPUT_DIR = f"{DIR}/results-none"
 OUTPUT_FILE = f"{DIR}/results.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
+DUO_FILE = f"{DIR}/duo.csv"
 N_TRIES = 256
 MODE = "none" # "sum" ou "mean" ou "none"
 
@@ -19,7 +20,7 @@ df_grid_orig = pd.read_csv(INPUT_FILE,index_col=0)
 df_tm = pd.read_csv(TM_FILE,index_col=0)
 df_tm = df_tm.iloc[:-1] # enlever TM libre
 
-
+df_duo = pd.read_csv(DUO_FILE)
 
 results = {"Id":[],"Mean":[],"Std":[],"Problems":[]}
 if os.path.exists(OUTPUT_DIR):
@@ -45,7 +46,10 @@ def generate():
             b = result1.sum(axis=1)
         elif MODE=="mean":
             b = result1.mean(axis=1)
-
+        duos = df_duo[df_duo["Choix"]==i_tm]
+        if len(duos):
+            # Handle duo assignments
+            pass
         #print(result.drop(columns=[str(i_tm)]).mean(axis=1))
         #print(result[str(i_tm)])
         if MODE=="none":
