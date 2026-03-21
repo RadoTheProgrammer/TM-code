@@ -7,11 +7,15 @@ DUO_SEP = " + "
 DIR = "Donnees_TMs/Annee_1"
 import pandas as pd
 import numpy as np
-df = pd.read_csv(f"{DIR}/voeux_eleves.csv",index_col=0)
+df = pd.read_csv(f"{DIR}/voeux_eleves.csv",index_col=0,dtype={
+    "Elève":str,
+    "Choix 1 en duo avec Nom Prénom (si case cochée précédemment)":str,
+    "Choix 2 en duo avec Nom Prénom (si case cochée précédemment)":str,
+    "Choix 3 en duo avec Nom Prénom (si case cochée précédemment)":str})
 df.index = df.index.astype(str)
 print(df.dtypes)
 df_grid = pd.DataFrame(np.nan,index=df.index,columns=range(1,N_TM+1))
-data_duo = []
+df_duo = pd.DataFrame(columns=["Eleves","Choix","ElevesAccord"])
 duo_repr = []
 for nom_eleve,eleve in df.iterrows():
 
@@ -25,37 +29,43 @@ for nom_eleve,eleve in df.iterrows():
         if choix>=N_TM: # TM libre
             continue
         ind_ou_duo = eleve[f"Individuel ou en duo{indice}"]
+
         if ind_ou_duo=="Duo":
             if nom_eleve=="187":
                 pass
             nom_eleve2 = str(eleve[f"Choix {nchoix} en duo avec Nom Prénom (si case cochée précédemment)"])
             assert not pd.isna(nom_eleve2)
-            if isinstance(nom_eleve2,str):
-                duo = [nom_eleve]
-                for nom_eleve2 in nom_eleve2.split(DUO_SEP):
-                    if nom_eleve2 not in df.index:
-                        print(f"Nom eleve: {nom_eleve2}")
-                    duo.append(nom_eleve2)
-            if duo==["187","110"]:
+
+            eleves = {str(nom_eleve)}
+            for nom_eleve2 in nom_eleve2.split(DUO_SEP):
+                if nom_eleve2 not in df.index:
+                    print(f"Nom eleve: {nom_eleve2}")
+                eleves.add(nom_eleve2)
+            if eleves=={"117","280"}:
                 pass
-            duo.sort() # type: ignore
-            data_duo.append(((DUO_SEP.join(duo),choix))) # type: ignore
-            duo_repr.append(nom_eleve)
+            #eleves.sort() # type: ignore
+            #eleves = DUO_SEP.join(eleves)
+            duo_bool = (df_duo["Eleves"]==eleves) & (df_duo["Choix"]==choix)
+            if duo_bool.any():
+                duo = df_duo[duo_bool]
+                assert len(duo)==1
+                duo = duo.iloc[0]
+
+                duo["ElevesAccord"].add(nom_eleve)
+
+            else:
+                df_duo.loc[len(df_duo)]=[eleves,choix,{nom_eleve}]
+
         else:
             assert ind_ou_duo=="Individuel"
         
 
 
         df_grid.at[nom_eleve,choix] = 4-nchoix
-# new_data_duo = []
-# for duoc in data_duo: #duoc: duo, choix
-#     if duoc in new_data_duo:
-#         continue
-#     new_data_duo.append(duoc)
-#     count = data_duo.count(duoc)
-
-#     assert count == duoc[0].count(DUO_SEP)+1
-# df_duo = pd.DataFrame(data_duo, columns=["Duo","Choix"])
-# df_duo.to_csv(f"{DIR}/duo.csv",index=False)
+for _,duo in df_duo.iterrows():
+    if duo["Eleves"]!=duo["ElevesAccord"]:
+        print(f"Problème duo: {duo}")
+df_duo = pd.DataFrame(data_duo, columns=["Duo","Choix"])
+df_duo.to_csv(f"{DIR}/duo.csv",index=False)
 
 df_grid.to_csv(f"{DIR}/grid.csv")

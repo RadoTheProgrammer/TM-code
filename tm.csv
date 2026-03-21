@@ -1,9 +1,4 @@
-id,Nmax,DuoAllowed,Langages,
-0,10,Yes,Python;Java;C++,
-1,10,No,Java;C#;JavaScript,
-2,10,Yes,Python;Ruby;Go,
-3,12,No,C++;Rust;Swift,
-4,8,Yes,Java;Kotlin;Scala,
-5,13,No,Python;PHP;Perl,
-6,7,Yes,JavaScript;TypeScript;Dart,
-7,14,No,C#;F#;VB.NET,
+A,B,C
+1.0,2,3
+4,5,6
+7,8,9
