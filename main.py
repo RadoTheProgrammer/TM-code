@@ -16,12 +16,13 @@ import shutil
 import numpy as np
 
 df_grid_orig = pd.read_csv(INPUT_FILE,index_col=0)
-
+df_grid_orig.index = df_grid_orig.index.astype(str)
 df_tm = pd.read_csv(TM_FILE,index_col=0)
 df_tm = df_tm.iloc[:-1] # enlever TM libre
 
 df_duo = pd.read_csv(DUO_FILE)
-
+df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")
+df_duo["Repr"] = df_duo["Eleves"].str[0]
 results = {"Id":[],"Mean":[],"Std":[],"Problems":[]}
 if os.path.exists(OUTPUT_DIR):
     shutil.rmtree(OUTPUT_DIR,ignore_errors=True)
@@ -35,6 +36,7 @@ def generate():
     problems = []
     for i_tm,tm in df_tm.sample(frac=1).iterrows():
         #print(i_tm)
+        col = df_grid[str(i_tm)]
         mask = df_grid[str(i_tm)] > 0
 
         result = df_grid[mask]
@@ -56,6 +58,21 @@ def generate():
             weights = pd.Series([1]*len(result), index=result.index)
         else:
             weights = a/b
+
+        for i_duo, duo in duos.iterrows():
+            print(duo)
+            eleves = duo["Eleves"]
+            duo_weight = 1
+            for eleve in eleves:
+                try:
+                    duo_weight *= weights[eleve]
+                    weights[eleve] = 0
+                except KeyError as e:
+                    duo_weight = 0
+                    pass
+            if duo_weight:
+                weights[duo["Repr"]] = duo_weight
+
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
         
@@ -79,10 +96,9 @@ def generate():
             #print(b)
             #print(b.isna())# Ceux qui n'ont pas d'autres choix
             n_to_assign = n-len(forced)
-            if MODE=="none":
-                weights = None
+
             if n_to_assign>=0:
-                
+
                 selected2 = result.sample(n-len(forced),weights=weights)
                 selected = pd.concat([forced,selected2])
             else: # PROBLEM !!!!
@@ -97,6 +113,8 @@ def generate():
             if i_eleve==51:
                 pass
             if i_eleve in selected.index:
+                if i_eleve in duos["Repr"]:
+                    pass
                 choice_weight = eleve[str(i_tm)]
                 decision_data["Id"].append(i_eleve)
                 decision_data["Choice"].append(i_tm)

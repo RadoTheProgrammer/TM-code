@@ -4,7 +4,7 @@ Crée la matrice d envie
 
 
 DUO_SEP = " + "
-DIR = "Donnees_TMs/Annee_2"
+DIR = "Donnees_TMs/Annee_1"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 import os
 import time
@@ -77,5 +77,4 @@ df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
 df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
 df_duo.to_csv(f"{DIR}/duo.csv",index=False)
 
-df_duo.to_parquet(f"{DIR}/duo.parquet")
 df_grid.to_csv(f"{DIR}/grid.csv")
