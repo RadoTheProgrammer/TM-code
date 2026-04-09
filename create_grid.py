@@ -18,13 +18,14 @@ df = pd.read_csv(f"{DIR}/voeux_eleves.csv",index_col=0,dtype={
     "Choix 3 en duo avec Nom Prénom (si case cochée précédemment)":str})
 df_tm = pd.read_csv(TM_FILE,index_col=0)
 n_tm = len(df_tm)
+tm_libre = df_tm[df_tm["Langue"]=="Libre"]
 df.index = df.index.astype(str)
-print(df.dtypes)
+
 df_grid = pd.DataFrame(np.nan,index=df.index,columns=range(1,n_tm+1))
 df_duo = pd.DataFrame(columns=["Eleves","Choix","ElevesAccord","Envies"])
 duo_repr = []
 for nom_eleve,eleve in df.iterrows():
-
+    n_tm_libre = 0
     for nchoix,indice in ((1,""),(2,".1"),(3,".2")):
         choix = eleve[f"Choix {nchoix}"]
         envie = 4 - nchoix
@@ -32,9 +33,9 @@ for nom_eleve,eleve in df.iterrows():
             df_grid.drop(nom_eleve, inplace=True)
             break
         choix = int(choix[2:])
-        if choix>=n_tm: # TM libre
-            assert choix==n_tm
-            break
+        if choix in tm_libre.index: # TM libre
+            n_tm_libre+=1
+            continue
         ind_ou_duo = eleve[f"Individuel ou en duo{indice}"]
 
         if ind_ou_duo=="Duo":
@@ -70,6 +71,9 @@ for nom_eleve,eleve in df.iterrows():
 
 
         df_grid.at[nom_eleve,choix] = envie
+
+    if n_tm_libre>1:
+        print(f"Eleve {nom_eleve} a {n_tm_libre} tm libre")
 for _,duo in df_duo.iterrows():
     if duo["Eleves"]!=duo["ElevesAccord"]:
         print(f"Problème duo: {duo}")
