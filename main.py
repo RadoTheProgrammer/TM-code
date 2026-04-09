@@ -6,7 +6,7 @@ OUTPUT_FILE = f"{DIR}/results.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 N_TRIES = 256
-MODE = "none" # "sum" ou "mean" ou "none"
+
 
 import os
 import random
@@ -44,36 +44,34 @@ def generate():
         l = len(result)
         a = result[str(i_tm)]
         result1 = result.drop(columns=[str(i_tm)])
-        if MODE in ("sum","none"):
-            b = result1.sum(axis=1)
-        elif MODE=="mean":
-            b = result1.mean(axis=1)
+
+        b = result1.sum(axis=1)
         duos = df_duo[df_duo["Choix"]==i_tm]
         if len(duos):
             # Handle duo assignments
             pass
         #print(result.drop(columns=[str(i_tm)]).mean(axis=1))
         #print(result[str(i_tm)])
-        if MODE=="none":
-            weights = pd.Series([1]*len(result), index=result.index)
-        else:
-            weights = a/b
+
+        weights = a/b
         n = int(tm["Nombre maximal travaux"])
-        for i_duo, duo in duos.iterrows():
-            print(duo)
-            eleves = duo["Eleves"]
-            duo_weight = 1
-            for eleve in eleves:
-                try:
-                    duo_weight *= weights[eleve]
-                    weights[eleve] = 0
-                except KeyError as e: # élève déjà assigné à un TM précédent
-                    duo_weight = 0
-                    pass
-            n-=len(duo["Eleves"])
-            if duo_weight:
-                n+=1
-                weights[duo["Repr"]] = duo_weight
+
+        # gérer le poids des duos
+        # for i_duo, duo in duos.iterrows():
+        #     #print(duo)
+        #     eleves = duo["Eleves"]
+        #     duo_weight = 1
+        #     for eleve in eleves:
+        #         try:
+        #             duo_weight *= weights[eleve]
+        #             weights[eleve] = 0
+        #         except KeyError as e: # élève déjà assigné à un TM précédent
+        #             duo_weight = 0
+        #             pass
+        #     l-=len(duo["Eleves"])
+        #     if duo_weight:
+        #         l+=1
+        #         weights[duo["Repr"]] = duo_weight
 
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
@@ -86,14 +84,12 @@ def generate():
             pass
         #print(pd.isna(m))
         if n<l:
-            if MODE in ("sum","none"):
-                forced_bool = b==0
-            else:
-                forced_bool = b.isna()
+            forced_bool = b==0
+
             forced = result[forced_bool]
             if len(forced):
                 pass
-
+            #print(weights)
             weights[forced_bool] = 0 
             #print(b)
             #print(b.isna())# Ceux qui n'ont pas d'autres choix
@@ -134,6 +130,7 @@ def generate():
     df_decision_data = pd.DataFrame(decision_data)
     for nom_eleve in df_grid.index:
         if nom_eleve not in decision_data["Id"]:
+            print(df_grid[nom_eleve])
             print(f"Nom eleve: {nom_eleve}")
 
     #print(df_decision_data)
