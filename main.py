@@ -58,7 +58,7 @@ def generate():
             weights = pd.Series([1]*len(result), index=result.index)
         else:
             weights = a/b
-
+        n = int(tm["Nombre maximal travaux"])
         for i_duo, duo in duos.iterrows():
             print(duo)
             eleves = duo["Eleves"]
@@ -67,17 +67,19 @@ def generate():
                 try:
                     duo_weight *= weights[eleve]
                     weights[eleve] = 0
-                except KeyError as e:
+                except KeyError as e: # élève déjà assigné à un TM précédent
                     duo_weight = 0
                     pass
+            n-=len(duo["Eleves"])
             if duo_weight:
+                n+=1
                 weights[duo["Repr"]] = duo_weight
 
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
         
 
-        n = int(tm["Nombre maximal travaux"])
+        
         m = tm["Nombre minimal travaux"]
         if not pd.isna(m) and l<m:
             #problems.append((i_tm,f"Not enough: {l}<{m}"))

@@ -21,13 +21,13 @@ n_tm = len(df_tm)
 df.index = df.index.astype(str)
 print(df.dtypes)
 df_grid = pd.DataFrame(np.nan,index=df.index,columns=range(1,n_tm+1))
-df_duo = pd.DataFrame(columns=["Eleves","Choix","ElevesAccord"])
+df_duo = pd.DataFrame(columns=["Eleves","Choix","ElevesAccord","Envies"])
 duo_repr = []
 for nom_eleve,eleve in df.iterrows():
 
     for nchoix,indice in ((1,""),(2,".1"),(3,".2")):
         choix = eleve[f"Choix {nchoix}"]
-        
+        envie = 4 - nchoix
         if choix=="0":
             df_grid.drop(nom_eleve, inplace=True)
             break
@@ -59,16 +59,17 @@ for nom_eleve,eleve in df.iterrows():
                 duo = duo.iloc[0]
 
                 duo["ElevesAccord"].add(nom_eleve)
+                duo["Envies"].add(envie)
 
             else:
-                df_duo.loc[len(df_duo)]=[eleves,choix,{nom_eleve}]
+                df_duo.loc[len(df_duo)]=[eleves,choix,{nom_eleve},{envie}]
 
         else:
             assert ind_ou_duo=="Individuel"
         
 
 
-        df_grid.at[nom_eleve,choix] = 4-nchoix
+        df_grid.at[nom_eleve,choix] = envie
 for _,duo in df_duo.iterrows():
     if duo["Eleves"]!=duo["ElevesAccord"]:
         print(f"Problème duo: {duo}")
