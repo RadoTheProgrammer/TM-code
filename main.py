@@ -1,16 +1,16 @@
 
 DIR = "Donnees_TMs/Annee_1"
 INPUT_FILE = f"{DIR}/grid.csv"
-OUTPUT_DIR = f"{DIR}/results-none"
+OUTPUT_DIR = f"{DIR}/results"
 OUTPUT_FILE = f"{DIR}/results.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 N_TRIES = 256
 
+RANDOM_STATE = 0
 
 import os
 import random
-from statistics import mean
 import pandas as pd
 import shutil
 import numpy as np
@@ -26,15 +26,15 @@ df_duo["Repr"] = df_duo["Eleves"].str[0]
 results = {"Id":[],"Mean":[],"Std":[],"Problems":[]}
 if os.path.exists(OUTPUT_DIR):
     shutil.rmtree(OUTPUT_DIR,ignore_errors=True)
-else:
-    os.mkdir(OUTPUT_DIR)
+
+os.mkdir(OUTPUT_DIR)
 def generate():
     global max_l2,best_mean,best_std
     # Génère une répartition aléatoire, erreur si ça échoue
     df_grid = df_grid_orig.copy()
     decision_data = {"Id": [], "Choice": [], "ChoiceWeight": []}
     problems = []
-    for i_tm,tm in df_tm.sample(frac=1).iterrows():
+    for i_tm,tm in df_tm.sample(frac=1,random_state=RANDOM_STATE).iterrows():
         #print(i_tm)
         col = df_grid[str(i_tm)]
         mask = df_grid[str(i_tm)] > 0
@@ -56,23 +56,41 @@ def generate():
         weights = a/b
         n = int(tm["Nombre maximal travaux"])
 
-        # gérer le poids des duos
-        # for i_duo, duo in duos.iterrows():
-        #     #print(duo)
-        #     eleves = duo["Eleves"]
-        #     duo_weight = 1
-        #     for eleve in eleves:
-        #         try:
-        #             duo_weight *= weights[eleve]
-        #             weights[eleve] = 0
-        #         except KeyError as e: # élève déjà assigné à un TM précédent
-        #             duo_weight = 0
-        #             pass
-        #     l-=len(duo["Eleves"])
-        #     if duo_weight:
-        #         l+=1
-        #         weights[duo["Repr"]] = duo_weight
+        #gérer le poids des duos
+        for i_duo, duo in duos.iterrows():
+            #print(duo)
+            eleves = duo["Eleves"]
+            duo_weight = 1
+            for eleve in eleves:
+                if eleve=="119":
+                    eleve_data = df_grid.loc[eleve]
+                    print(eleve_data[eleve_data>0])
+                    pass
+                try:
+                    #print(duo_weight,weights[eleve])
+                    if duo_weight==0 and weights[eleve]==np.inf:
+                        problems.append(f"{eleve} non attribué")
+                        print(problems[-1])
+                        decision_data["Id"].append(eleve)
+                        decision_data["Choice"].append(0)
+                        decision_data["ChoiceWeight"].append(0)
+                        duo_weight = 0
+                    else:
+                        duo_weight *= weights[eleve]
 
+                        
+                    weights[eleve] = 0
+                except KeyError as e: # élève déjà assigné à un TM précédent
+                    if duo_weight==np.inf:
+                        duo_weight = 0
+                        pass
+                    duo_weight *= 0
+                    pass
+            l-=len(duo["Eleves"])
+            if duo_weight:
+                l+=1
+                weights[duo["Repr"]] = duo_weight
+        to_ignore = weights[weights==0].index
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
         
@@ -84,7 +102,7 @@ def generate():
             pass
         #print(pd.isna(m))
         if n<l:
-            forced_bool = b==0
+            forced_bool = weights==np.inf
 
             forced = result[forced_bool]
             if len(forced):
@@ -97,7 +115,7 @@ def generate():
 
             if n_to_assign>=0:
 
-                selected2 = result.sample(n-len(forced),weights=weights)
+                selected2 = result.sample(n-len(forced),weights=weights,random_state=RANDOM_STATE)
                 selected = pd.concat([forced,selected2])
             else: # PROBLEM !!!!
                 problems.append((i_tm,f"Too many: {len(forced)}>{n}"))
@@ -107,20 +125,35 @@ def generate():
         #for eleve in result:
         #print(selected)
         #print(result)
-        for i_eleve,eleve in result.iterrows():
-            if i_eleve==51:
-                pass
-            if i_eleve in selected.index:
-                if i_eleve in duos["Repr"]:
+        for nom_eleve_repr,eleve in result.iterrows():
+            if nom_eleve_repr in to_ignore:
+                if nom_eleve_repr in duos["Repr"]:
                     pass
-                choice_weight = eleve[str(i_tm)]
-                decision_data["Id"].append(i_eleve)
-                decision_data["Choice"].append(i_tm)
-                decision_data["ChoiceWeight"].append(choice_weight)
-                df_grid.loc[i_eleve] = np.nan # type: ignore
-                df_grid.at[i_eleve,str(i_tm)] = choice_weight
+                if nom_eleve_repr=="118":
+                    pass
+                continue
+                pass
+
+            sel_duos = duos[duos["Repr"]==nom_eleve_repr]
+            if sel_duos.empty:
+                eleves = [nom_eleve_repr]
             else:
-                df_grid.at[i_eleve,str(i_tm)] = np.nan
+                assert len(sel_duos)==1,f"{len(sel_duos)} duos pour {nom_eleve_repr} TM {i_tm}"
+                duo = sel_duos.iloc[0]
+                eleves = duo["Eleves"]
+            is_selected = nom_eleve_repr in selected.index
+            
+            for nom_eleve in eleves:
+                if is_selected:
+                    choice_weight = eleve[str(i_tm)]
+                    #assert nom_eleve not in decision_data["Id"]
+                    decision_data["Id"].append(nom_eleve)
+                    decision_data["Choice"].append(i_tm)
+                    decision_data["ChoiceWeight"].append(choice_weight)
+                    df_grid.loc[nom_eleve] = np.nan # type: ignore
+                    df_grid.at[nom_eleve,str(i_tm)] = choice_weight
+                else:
+                    df_grid.at[nom_eleve,str(i_tm)] = np.nan
                 pass
             pass
         #df_grid.drop(selected.index,inplace=True)
@@ -130,9 +163,9 @@ def generate():
     df_decision_data = pd.DataFrame(decision_data)
     for nom_eleve in df_grid.index:
         if nom_eleve not in decision_data["Id"]:
-            print(df_grid[nom_eleve])
+            #print(df_grid.loc[nom_eleve])
             print(f"Nom eleve: {nom_eleve}")
-
+            # 119 91
     #print(df_decision_data)
     if len(df_grid)==len(df_decision_data): # Succès
         df_decision_data.to_csv(f"{OUTPUT_DIR}/r{i_try}.csv",index=False)
@@ -145,7 +178,9 @@ def generate():
         print(f"Try {i_try}: mean={mean}, std={std}, problems={problems}")
 
         pass
-    
+    else:
+        print(len(df_grid))
+        print(len(df_decision_data))
     if len(df_grid)>0:
         return False # échec
     return True
