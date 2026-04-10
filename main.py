@@ -42,11 +42,13 @@ def generate():
         result = df_grid[mask]
         #result.choic
         l = len(result)
+        
         a = result[str(i_tm)]
         result1 = result.drop(columns=[str(i_tm)])
 
         b = result1.sum(axis=1)
         duos = df_duo[df_duo["Choix"]==i_tm]
+        #print("l",len(result),len(duos))
         if len(duos):
             # Handle duo assignments
             pass
@@ -57,12 +59,16 @@ def generate():
         n = int(tm["Nombre maximal travaux"])
 
         #gérer le poids des duos
+        problem = False
+        eleves_duos = set()
         for i_duo, duo in duos.iterrows():
             #print(duo)
             eleves = duo["Eleves"]
             duo_weight = 1
             for eleve in eleves:
+                eleves_duos.add(eleve)
                 if eleve=="119":
+                    problem = True
                     eleve_data = df_grid.loc[eleve]
                     print(eleve_data[eleve_data>0])
                     pass
@@ -81,16 +87,21 @@ def generate():
                         
                     weights[eleve] = 0
                 except KeyError as e: # élève déjà assigné à un TM précédent
+                    # attention avec l<n
                     if duo_weight==np.inf:
+                        # WARNING !!!
                         duo_weight = 0
                         pass
                     duo_weight *= 0
                     pass
-            l-=len(duo["Eleves"])
+
+
             if duo_weight:
-                l+=1
+
                 weights[duo["Repr"]] = duo_weight
-        to_ignore = weights[weights==0].index
+
+        l = len(weights[weights!=0]) 
+
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
         
@@ -105,6 +116,8 @@ def generate():
             forced_bool = weights==np.inf
 
             forced = result[forced_bool]
+            if i_tm==4:
+                pass
             if len(forced):
                 pass
             #print(weights)
@@ -121,15 +134,19 @@ def generate():
                 problems.append((i_tm,f"Too many: {len(forced)}>{n}"))
                 selected = forced
         else:
-            selected = result
+            if i_tm==4:
+                pass
+            selected = result[weights!=0]
         #for eleve in result:
         #print(selected)
         #print(result)
+        repr = duos["Repr"].values
         for nom_eleve_repr,eleve in result.iterrows():
-            if nom_eleve_repr in to_ignore:
+            if nom_eleve_repr in eleves_duos and nom_eleve_repr not in repr:
                 if nom_eleve_repr in duos["Repr"]:
                     pass
-                if nom_eleve_repr=="118":
+                if nom_eleve_repr=="119":
+                    print(duos["Repr"].values)
                     pass
                 continue
                 pass
@@ -141,9 +158,11 @@ def generate():
                 assert len(sel_duos)==1,f"{len(sel_duos)} duos pour {nom_eleve_repr} TM {i_tm}"
                 duo = sel_duos.iloc[0]
                 eleves = duo["Eleves"]
-            is_selected = nom_eleve_repr in selected.index
-            
+            is_selected = nom_eleve_repr in selected.index.values
+            print(selected.index)
             for nom_eleve in eleves:
+                if (nom_eleve=="33") and (i_tm==7):
+                    pass
                 if is_selected:
                     choice_weight = eleve[str(i_tm)]
                     #assert nom_eleve not in decision_data["Id"]
@@ -165,6 +184,8 @@ def generate():
         if nom_eleve not in decision_data["Id"]:
             #print(df_grid.loc[nom_eleve])
             print(f"Nom eleve: {nom_eleve}")
+    df_decision_data.to_csv("decision-data.csv")
+    print(df_decision_data["Id"].value_counts())
             # 119 91
     #print(df_decision_data)
     if len(df_grid)==len(df_decision_data): # Succès
