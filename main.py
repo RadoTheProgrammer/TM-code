@@ -7,7 +7,7 @@ TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 N_TRIES = 256
 
-RANDOM_STATE = 0
+RANDOM_STATE = None
 
 import os
 import random
@@ -64,40 +64,23 @@ def generate():
         for i_duo, duo in duos.iterrows():
             #print(duo)
             eleves = duo["Eleves"]
-            duo_weight = 1
-            for eleve in eleves:
-                eleves_duos.add(eleve)
-                if eleve=="119":
-                    problem = True
-                    eleve_data = df_grid.loc[eleve]
-                    print(eleve_data[eleve_data>0])
-                    pass
-                try:
-                    #print(duo_weight,weights[eleve])
-                    if duo_weight==0 and weights[eleve]==np.inf:
-                        problems.append(f"{eleve} non attribué")
-                        print(problems[-1])
-                        decision_data["Id"].append(eleve)
-                        decision_data["Choice"].append(0)
-                        decision_data["ChoiceWeight"].append(0)
-                        duo_weight = 0
-                    else:
-                        duo_weight *= weights[eleve]
-
-                        
-                    weights[eleve] = 0
-                except KeyError as e: # élève déjà assigné à un TM précédent
-                    # attention avec l<n
-                    if duo_weight==np.inf:
-                        # WARNING !!!
-                        duo_weight = 0
-                        pass
-                    duo_weight *= 0
-                    pass
+            weights_duo = weights.reindex(eleves,fill_value=0) # default thing
+            if 0 in weights_duo.values and np.inf in weights_duo.values:
+                for eleve in weights_duo[weights_duo==np.inf].index:
+                    problems.append(f"{eleve} non attribué")
+                    print(problems[-1])
+                    decision_data["Id"].append(eleve)
+                    decision_data["Choice"].append(0)
+                    decision_data["ChoiceWeight"].append(0)
+                    duo_weight = 0
+            else:
+                duo_weight = weights_duo.product()
 
 
+            weights[weights.index.intersection(eleves)] = 0
+            if list(weights.index)!=list(result.index):
+                assert 0
             if duo_weight:
-
                 weights[duo["Repr"]] = duo_weight
 
         l = len(weights[weights!=0]) 
@@ -141,6 +124,8 @@ def generate():
         #print(selected)
         #print(result)
         repr = duos["Repr"].values
+        if 54 in duos["Repr"]:
+            pass
         for nom_eleve_repr,eleve in result.iterrows():
             if nom_eleve_repr in eleves_duos and nom_eleve_repr not in repr:
                 if nom_eleve_repr in duos["Repr"]:
@@ -159,7 +144,7 @@ def generate():
                 duo = sel_duos.iloc[0]
                 eleves = duo["Eleves"]
             is_selected = nom_eleve_repr in selected.index.values
-            print(selected.index)
+            #print(selected.index)
             for nom_eleve in eleves:
                 if (nom_eleve=="33") and (i_tm==7):
                     pass
@@ -185,7 +170,7 @@ def generate():
             #print(df_grid.loc[nom_eleve])
             print(f"Nom eleve: {nom_eleve}")
     df_decision_data.to_csv("decision-data.csv")
-    print(df_decision_data["Id"].value_counts())
+    #print(df_decision_data["Id"].value_counts())
             # 119 91
     #print(df_decision_data)
     if len(df_grid)==len(df_decision_data): # Succès
