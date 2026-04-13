@@ -17,34 +17,35 @@ import numpy as np
 
 df_grid_orig = pd.read_csv(INPUT_FILE,index_col=0)
 df_grid_orig.index = df_grid_orig.index.astype(str)
+empty_df = pd.DataFrame()
 df_tm = pd.read_csv(TM_FILE,index_col=0)
 df_tm = df_tm.iloc[:-1] # enlever TM libre
 
 df_duo = pd.read_csv(DUO_FILE)
 df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")
 df_duo["Repr"] = df_duo["Eleves"].str[0]
-results = {"Id":[],"Mean":[],"Std":[],"Problems":[]}
+results = {"Id":[],"Mean":[],"Std":[],"Problems":[],"TMnonouverts":[]}
 if os.path.exists(OUTPUT_DIR):
     shutil.rmtree(OUTPUT_DIR,ignore_errors=True)
 
 os.mkdir(OUTPUT_DIR)
+
 def generate():
     global max_l2,best_mean,best_std
     # Génère une répartition aléatoire, erreur si ça échoue
     df_grid = df_grid_orig.copy()
-    decision_data = {"Id": [], "Choice": [], "ChoiceWeight": []}
+    
     problems = []
+    TM_non_ouverts = []
     for i_tm,tm in df_tm.sample(frac=1,random_state=RANDOM_STATE).iterrows():
         #print(i_tm)
         col = df_grid[str(i_tm)]
         mask = df_grid[str(i_tm)] > 0
 
-        result = df_grid[mask]
-        #result.choic
-        l = len(result)
+        candidats = df_grid[mask]
         
-        a = result[str(i_tm)]
-        result1 = result.drop(columns=[str(i_tm)])
+        a = candidats[str(i_tm)]
+        result1 = candidats.drop(columns=[str(i_tm)])
 
         b = result1.sum(axis=1)
         duos = df_duo[df_duo["Choix"]==i_tm]
@@ -56,7 +57,7 @@ def generate():
         #print(result[str(i_tm)])
 
         weights = a/b
-        n = int(tm["Nombre maximal travaux"])
+        maximum = int(tm["Nombre maximal travaux"])
 
         #gérer le poids des duos
         problem = False
@@ -78,27 +79,34 @@ def generate():
 
 
             weights[weights.index.intersection(eleves)] = 0
-            if list(weights.index)!=list(result.index):
+            if list(weights.index)!=list(candidats.index):
                 assert 0
             if duo_weight:
                 weights[duo["Repr"]] = duo_weight
 
-        l = len(weights[weights!=0]) 
+        n_candidats = len(weights[weights!=0]) 
 
         #if l<tm["Nmin"]
         #n = random.randrange(int(tm["Nombre maximal travaux"])+1)
         
 
         
-        m = tm["Nombre minimal travaux"]
-        if not pd.isna(m) and l<m:
-            #problems.append((i_tm,f"Not enough: {l}<{m}"))
+        minimum = tm["Nombre minimal travaux"]
+        if not pd.isna(minimum) and n_candidats<minimum:
+            forced = candidats[weights==np.inf]
+            if forced.empty:
+                selected = empty_df
+                TM_non_ouverts.append(i_tm)
+                
+            else:
+                selected = forced
+                problems.append((i_tm,f"Not enough: {len(forced)}<{minimum}"))
             pass
         #print(pd.isna(m))
-        if n<l:
+        if maximum<n_candidats:
             forced_bool = weights==np.inf
 
-            forced = result[forced_bool]
+            forced = candidats[forced_bool]
             if i_tm==4:
                 pass
             if len(forced):
@@ -107,26 +115,26 @@ def generate():
             weights[forced_bool] = 0 
             #print(b)
             #print(b.isna())# Ceux qui n'ont pas d'autres choix
-            n_to_assign = n-len(forced)
+            n_to_assign = maximum-len(forced)
 
             if n_to_assign>=0:
 
-                selected2 = result.sample(n-len(forced),weights=weights,random_state=RANDOM_STATE)
+                selected2 = candidats.sample(maximum-len(forced),weights=weights,random_state=RANDOM_STATE)
                 selected = pd.concat([forced,selected2])
             else: # PROBLEM !!!!
-                problems.append((i_tm,f"Too many: {len(forced)}>{n}"))
+                problems.append((i_tm,f"Too many: {len(forced)}>{maximum}"))
                 selected = forced
         else:
             if i_tm==4:
                 pass
-            selected = result[weights!=0]
+            selected = candidats[weights!=0]
         #for eleve in result:
         #print(selected)
         #print(result)
         repr = duos["Repr"].values
         if 54 in duos["Repr"]:
             pass
-        for nom_eleve_repr,eleve in result.iterrows():
+        for nom_eleve_repr,eleve in candidats.iterrows():
             if nom_eleve_repr in eleves_duos and nom_eleve_repr not in repr:
                 if nom_eleve_repr in duos["Repr"]:
                     pass
@@ -181,7 +189,8 @@ def generate():
         results["Mean"].append(mean)
         results["Std"].append(std)
         results["Problems"].append(problems)
-        print(f"Try {i_try}: mean={mean}, std={std}, problems={problems}")
+        results["TMnonouverts"].append(TM_non_ouverts)
+        print(f"Try {i_try}: mean={mean}, std={std}, problems={problems}, non ouverts={TM_non_ouverts}")
 
         pass
     else:
