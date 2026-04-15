@@ -7,7 +7,7 @@ TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 N_TRIES = 256
 
-RANDOM_STATE = None
+RANDOM_SEED = 42
 
 import os
 import random
@@ -15,6 +15,7 @@ import pandas as pd
 import shutil
 import numpy as np
 
+rng = np.random.default_rng(RANDOM_SEED)
 df_grid_orig = pd.read_csv(INPUT_FILE,index_col=0)
 df_grid_orig.index = df_grid_orig.index.astype(str)
 empty_df = pd.DataFrame()
@@ -37,7 +38,9 @@ def generate():
     
     problems = []
     TM_non_ouverts = []
-    for i_tm,tm in df_tm.sample(frac=1,random_state=RANDOM_STATE).iterrows():
+    decision_data = {"Id": [], "Choice": [], "ChoiceWeight": []}
+
+    for i_tm,tm in df_tm.sample(frac=1,random_state=rng).iterrows():
         #print(i_tm)
         col = df_grid[str(i_tm)]
         mask = df_grid[str(i_tm)] > 0
@@ -119,7 +122,7 @@ def generate():
 
             if n_to_assign>=0:
 
-                selected2 = candidats.sample(maximum-len(forced),weights=weights,random_state=RANDOM_STATE)
+                selected2 = candidats.sample(maximum-len(forced),weights=weights,random_state=rng)
                 selected = pd.concat([forced,selected2])
             else: # PROBLEM !!!!
                 problems.append((i_tm,f"Too many: {len(forced)}>{maximum}"))
@@ -177,7 +180,7 @@ def generate():
         if nom_eleve not in decision_data["Id"]:
             #print(df_grid.loc[nom_eleve])
             print(f"Nom eleve: {nom_eleve}")
-    df_decision_data.to_csv("decision-data.csv")
+    #df_decision_data.to_csv("decision-data.csv")
     #print(df_decision_data["Id"].value_counts())
             # 119 91
     #print(df_decision_data)

@@ -3,13 +3,20 @@ import numpy as np
 import random
 random.seed("hello world")
 print(random.randrange(7))
-df = pd.DataFrame({"a":list("ABC"),"b":list("DEF")})
+print(random.randrange(7))
+random.seed("hello world")
+print(random.randrange(7))
+print(random.randrange(7))
+df = pd.DataFrame({"a":list("ABCDEFGH"),"b":list("12345678")})
 a = df["a"]
 a[a.index.intersection([1,3])] = 0
 print(a)
 print(1 in df["a"])
-print(df[[0,3,4]])
-print(df.sample(8,random_state=0,replace=True))
+rng = np.random.default_rng(42)
+print(type(rng))
+print(df.sample(n=8,random_state=rng))
+print(df.sample(n=8,random_state=rng))
+print(df.sample(n=8,random_state=rng))
 c = df["a"]/df["b"]
 print(c[0]*0)
 mean = df["b"].mean()
