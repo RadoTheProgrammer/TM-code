@@ -1,11 +1,13 @@
 """
-Crée la matrice d envie
+Crée la matrice d'envie, un tableau avec les élèves comme lignes et les TMs comme colonnes, 
+qui indique donc pour chaque élève à quel point il a envie de ce TM
 """
 
 
 DUO_SEP = " + "
 DIR = "Donnees_TMs/Annee_1"
-TM_FILE = f"{DIR}/liste_sujets.csv"
+TM_FILE = f"{DIR}/liste_sujets.csv" # tableau avec les TMs, leurs langues et le nombre de places
+
 import os
 import time
 
@@ -16,6 +18,7 @@ df = pd.read_csv(f"{DIR}/voeux_eleves.csv",index_col=0,dtype={
     "Choix 1 en duo avec Nom Prénom (si case cochée précédemment)":str,
     "Choix 2 en duo avec Nom Prénom (si case cochée précédemment)":str,
     "Choix 3 en duo avec Nom Prénom (si case cochée précédemment)":str})
+
 df_tm = pd.read_csv(TM_FILE,index_col=0)
 n_tm = len(df_tm)
 tm_libre = df_tm[df_tm["Langue"]=="Libre"]
@@ -23,7 +26,8 @@ df.index = df.index.astype(str)
 
 df_grid = pd.DataFrame(np.nan,index=df.index,columns=range(1,n_tm+1))
 df_duo = pd.DataFrame(columns=["Eleves","Choix","ElevesAccord","Envies"])
-duo_repr = []
+duo_repr = [] # liste des représentants de duos, pour vérifier que les représentants sont bien dans les duos accordés
+
 for nom_eleve,eleve in df.iterrows():
     n_tm_libre = 0
     for nchoix,indice in ((1,""),(2,".1"),(3,".2")):

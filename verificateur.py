@@ -5,7 +5,7 @@ GRID_FILE = f"{DIR}/grid.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 
-RESULT_FILE = "Donnees_TMs/Annee_1/results/r0.csv"
+RESULT_FILE = "Donnees_TMs/Annee_1/results/r50.csv"
 
 df_grid = pd.read_csv(GRID_FILE,index_col=0)
 df_grid.index = df_grid.index.astype(str)
@@ -28,11 +28,15 @@ for nom_eleve,eleve in df_grid.iterrows():
         if not l:
             continue
         eleve_result = eleve_result.iloc[0]
+    tm = int(eleve_result["Choice"])
+    #print(eleve)
+    if not tm:
+        print(f"{nom_eleve} n'a pas de TM")
+        continue
     envie = eleve_result["ChoiceWeight"]
     if envie<=0:
         print(f"{nom_eleve} a {envie} envie")
-    tm = int(eleve_result["Choice"])
-    #print(eleve)
+
     envie_attendu = eleve[str(tm)]
     if envie!=envie_attendu:
         print(f"{nom_eleve} a {envie_attendu} envie pour {tm}, pas {envie}")
