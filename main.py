@@ -122,12 +122,9 @@ def generate():
         n_candidats = len(weights[weights!=0]) 
 
         # Choisir les candidats selon les contraintes minimum/maximum.
-
         minimum = tm["Nombre minimal travaux"]
         if not pd.isna(minimum) and n_candidats<minimum:
             forced = candidats[weights==np.inf]
-            if i_tm==16:
-                pass
             if i_tm==16:
                 pass
             if forced.empty:
