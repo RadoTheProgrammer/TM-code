@@ -14,9 +14,9 @@ OUTPUT_DIR = f"{DIR}/results"  # Répertoire pour les résultats
 OUTPUT_FILE = f"{DIR}/results.csv"  # Fichier de résumé des résultats
 TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
 DUO_FILE = f"{DIR}/duo.csv"  # Fichier des binômes d'élèves
-N_TRIES = 256  # Nombre de tentatives d'allocation
+N_TRIES = 1024  # Nombre de tentatives d'allocation
 
-RANDOM_SEED = 42  # Graine pour la reproductibilité
+RANDOM_SEED = 67  # Graine pour la reproductibilité
 
 import os
 import random
@@ -30,14 +30,14 @@ import numpy as np
 rng = np.random.default_rng(RANDOM_SEED)  # Générateur aléatoire
 df_grid_orig = pd.read_csv(INPUT_FILE, index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
-df_grid_orig["Nproblems"] = 0
+nproblems = pd.Series(0.0, index=df_grid_orig.index)  # Initialiser le compteur de problèmes pour chaque élève
 
 default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
 
 # Charger les travaux de maturité et supprimer le dernier (TM libre)
 df_tm = pd.read_csv(TM_FILE, index_col=0)
 df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs libres
-df_tm["Nproblems"] = 0  # Initialiser le compteur de problèmes pour chaque TM
+df_tm["Nproblems"] = 0.0  # Initialiser le compteur de problèmes pour chaque TM
 # Charger les binômes et traiter les données
 df_duo = pd.read_csv(DUO_FILE)
 df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")  # Séparer les élèves en liste
@@ -88,12 +88,10 @@ def generate():
 
         # Calculer les poids comme le rapport entre le score du choix courant et
         # les autres scores disponibles.
-        weights = a/b*(candidats["Nproblems"]+1)
+        weights = a/b*(nproblems[candidats.index]+1)
         maximum = int(tm["Nombre maximal travaux"])
 
         # Gérer les poids des binômes et garantir que les membres sont affectés ensemble.
-        problem = False
-        eleves_duos = set()
         for i_duo, duo in duos.iterrows():
             eleves = duo["Eleves"]
             weights_duo = weights.reindex(eleves,fill_value=0)
@@ -103,7 +101,7 @@ def generate():
                 # enregistrer le problème et marquer le binôme comme non affecté.
                 for eleve in weights_duo[weights_duo==np.inf].index:
                     problems.append(f"{eleve} non attribué")
-                    df_grid_orig.at[eleve, "Nproblems"] += 1
+                    nproblems[eleve] += 1
                     decision_data["Id"].append(eleve)
                     decision_data["Choice"].append(0)
                     decision_data["ChoiceWeight"].append(0)

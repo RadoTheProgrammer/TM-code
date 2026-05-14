@@ -5,7 +5,7 @@ GRID_FILE = f"{DIR}/grid.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 
-RESULT_FILE = "Donnees_TMs/Annee_1/results/r50.csv"
+RESULT_FILE = "Donnees_TMs/Annee_1/results/r271.csv"
 
 df_grid = pd.read_csv(GRID_FILE,index_col=0)
 df_grid.index = df_grid.index.astype(str)
@@ -56,7 +56,6 @@ for i_tm,tm in df_tm.iterrows():
         selected = pd.Series(duo["Eleves"]).isin(eleves.index)
         if selected.all():
             if i_tm==4:
-                print(len(selected))
                 pass
             n-=len(selected)-1
         elif not ~selected.all():
