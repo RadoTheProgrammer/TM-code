@@ -8,12 +8,8 @@ OUTPUT_DIR = f"{DIR}/results"  # Répertoire pour les résultats
 OUTPUT_FILE = f"{DIR}/results.csv"  # Fichier de résumé des résultats
 TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
 DUO_FILE = f"{DIR}/duo.csv"  # Fichier des binômes d'élèves
-N_TRIES = 256  # Nombre de tentatives d'allocation
-INPUT_FILE = f"{DIR}/grid.csv"  # Fichier CSV contenant la grille des préférences
-OUTPUT_DIR = f"{DIR}/results"  # Répertoire pour les résultats
-OUTPUT_FILE = f"{DIR}/results.csv"  # Fichier de résumé des résultats
-TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
-DUO_FILE = f"{DIR}/duo.csv"  # Fichier des binômes d'élèves
+NPROBLEMS_ELEVES_FILE = f"{DIR}/nproblems_eleves.csv"  # Fichier pour enregistrer les problèmes rencontrés
+NPROBLEMS_TM_FILE = f"{DIR}/nproblems_tm.csv"  # Fichier pour enregistrer les problèmes par TM
 N_TRIES = 1024  # Nombre de tentatives d'allocation
 
 RANDOM_SEED = 67  # Graine pour la reproductibilité
@@ -30,14 +26,23 @@ import numpy as np
 rng = np.random.default_rng(RANDOM_SEED)  # Générateur aléatoire
 df_grid_orig = pd.read_csv(INPUT_FILE, index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
-nproblems = pd.Series(0.0, index=df_grid_orig.index)  # Initialiser le compteur de problèmes pour chaque élève
+if os.path.exists(NPROBLEMS_ELEVES_FILE):
+    nproblems_eleves = pd.read_csv(NPROBLEMS_ELEVES_FILE, index_col=0).iloc[:,0]
+    nproblems_eleves.index = nproblems_eleves.index.astype(str)
+else:
+    nproblems_eleves = pd.Series(0.0, index=df_grid_orig.index)  # Initialiser le compteur de problèmes pour chaque élève
 
 default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
 
 # Charger les travaux de maturité et supprimer le dernier (TM libre)
 df_tm = pd.read_csv(TM_FILE, index_col=0)
+df_tm.index = df_tm.index.astype(str)
 df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs libres
-df_tm["Nproblems"] = 0.0  # Initialiser le compteur de problèmes pour chaque TM
+if os.path.exists(NPROBLEMS_TM_FILE):
+    nproblems_tm = pd.read_csv(NPROBLEMS_TM_FILE, index_col=0).iloc[:,0]
+
+else:
+    nproblems_tm = pd.Series(0.0, index=df_tm.index)  # Initialiser le compteur de problèmes pour chaque TM
 # Charger les binômes et traiter les données
 df_duo = pd.read_csv(DUO_FILE)
 df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")  # Séparer les élèves en liste
@@ -69,7 +74,9 @@ def generate():
     decision_data = {"Id": [], "Choice": [], "ChoiceWeight": []}
 
     # Parcourir les TMs dans un ordre aléatoire en utilisant le générateur fixe.
-    for i_tm,tm in df_tm.sample(frac=1,random_state=rng,weights=df_tm["Nproblems"]+1).iterrows():
+    # i_tm: int
+    for i_tm,tm in df_tm.sample(frac=1,random_state=rng,weights=nproblems_tm+1).iterrows():
+
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
         mask = df_grid[str(i_tm)] > 0
 
@@ -88,7 +95,7 @@ def generate():
 
         # Calculer les poids comme le rapport entre le score du choix courant et
         # les autres scores disponibles.
-        weights = a/b*(nproblems[candidats.index]+1)
+        weights = a/b*(nproblems_eleves[candidats.index]+1)
         maximum = int(tm["Nombre maximal travaux"])
 
         # Gérer les poids des binômes et garantir que les membres sont affectés ensemble.
@@ -101,7 +108,7 @@ def generate():
                 # enregistrer le problème et marquer le binôme comme non affecté.
                 for eleve in weights_duo[weights_duo==np.inf].index:
                     problems.append(f"{eleve} non attribué")
-                    nproblems[eleve] += 1
+                    nproblems_eleves[eleve] += 1
                     decision_data["Id"].append(eleve)
                     decision_data["Choice"].append(0)
                     decision_data["ChoiceWeight"].append(0)
@@ -131,7 +138,7 @@ def generate():
             else:
                 selected = forced
                 problems.append((i_tm,f"Pas assez : {len(forced)}<{minimum}"))
-                df_tm.at[i_tm, "Nproblems"] += 1
+                nproblems_tm[i_tm] += 1
         elif maximum<n_candidats:
             forced_bool = weights==np.inf
             forced = candidats[forced_bool]
@@ -148,7 +155,7 @@ def generate():
             else:
                 problems.append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
                 selected = forced
-                df_tm.at[i_tm, "Nproblems"] += 1
+                nproblems_tm[i_tm] += 1
         else:
             if i_tm==4:
                 pass
@@ -201,11 +208,13 @@ def generate():
         # Si l'affectation est incomplète, afficher les diagnostics.
         print(len(df_grid))
         print(len(df_decision_data))
-
-max_l2 = 0
-for i_try in range(N_TRIES):
-    print(i_try)
-    l2 = generate()
-
-df_results = pd.DataFrame(results)
-df_results.to_csv(OUTPUT_FILE,index=False)
+try:
+    max_l2 = 0
+    for i_try in range(N_TRIES):
+        print(i_try)
+        l2 = generate()
+except KeyboardInterrupt:
+    df_results = pd.DataFrame(results)
+    df_results.to_csv(OUTPUT_FILE,index=False)
+    nproblems_eleves.to_csv(NPROBLEMS_ELEVES_FILE)
+    nproblems_tm.to_csv(NPROBLEMS_TM_FILE)
