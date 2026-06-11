@@ -5,12 +5,12 @@
 DIR = "Donnees_TMs/Annee_1"
 INPUT_FILE = f"{DIR}/grid.csv"  # Fichier CSV contenant la grille des préférences
 OUTPUT_DIR = f"{DIR}/results"  # Répertoire pour les résultats
-OUTPUT_FILE = f"{DIR}/results.csv"  # Fichier de résumé des résultats
+OUTPUT_FILE = f"{OUTPUT_DIR}/o2.csv"  # Fichier de résumé des résultats
 TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
 DUO_FILE = f"{DIR}/duo.csv"  # Fichier des binômes d'élèves
 NPROBLEMS_ELEVES_FILE = f"{DIR}/nproblems_eleves.csv"  # Fichier pour enregistrer les problèmes rencontrés
 NPROBLEMS_TM_FILE = f"{DIR}/nproblems_tm.csv"  # Fichier pour enregistrer les problèmes par TM
-N_TRIES = 1024  # Nombre de tentatives d'allocation
+N_TRIES = 1000  # Nombre de tentatives d'allocation
 
 RANDOM_SEED = 67  # Graine pour la reproductibilité
 
@@ -36,8 +36,10 @@ default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
 
 # Charger les travaux de maturité et supprimer le dernier (TM libre)
 df_tm = pd.read_csv(TM_FILE, index_col=0)
-df_tm.index = df_tm.index.astype(str)
+#df_tm.index = df_tm.index.astype(str)
 df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs libres
+
+
 if os.path.exists(NPROBLEMS_TM_FILE):
     nproblems_tm = pd.read_csv(NPROBLEMS_TM_FILE, index_col=0).iloc[:,0]
 
@@ -75,7 +77,8 @@ def generate():
 
     # Parcourir les TMs dans un ordre aléatoire en utilisant le générateur fixe.
     # i_tm: int
-    for i_tm,tm in df_tm.sample(frac=1,random_state=rng,weights=nproblems_tm+1).iterrows():
+    #print(nproblems_tm+1)
+    for i_tm,tm in df_tm.sample(frac=1,weights=nproblems_tm+1,random_state=rng).iterrows():
 
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
         mask = df_grid[str(i_tm)] > 0
@@ -213,7 +216,7 @@ try:
     for i_try in range(N_TRIES):
         print(i_try)
         l2 = generate()
-except KeyboardInterrupt:
+finally:
     df_results = pd.DataFrame(results)
     df_results.to_csv(OUTPUT_FILE,index=False)
     nproblems_eleves.to_csv(NPROBLEMS_ELEVES_FILE)
