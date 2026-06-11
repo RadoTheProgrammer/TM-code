@@ -1,11 +1,11 @@
 import pandas as pd
 
-DIR = "Donnees_TMs/Annee_1"
+DIR = "Donnees_TMs/Annee_2"
 GRID_FILE = f"{DIR}/grid.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 
-RESULT_FILE = "Donnees_TMs/Annee_1/results/r565.csv"
+RESULT_FILE = f"{DIR}/results/r658.csv"
 
 df_grid = pd.read_csv(GRID_FILE,index_col=0)
 df_grid.index = df_grid.index.astype(str)
@@ -25,7 +25,7 @@ for nom_eleve,eleve in df_grid.iterrows():
 
     if not isinstance(eleve_result,pd.Series):
         print(f"{nom_eleve} a {len(eleve_result)} TMs")
-        if not l:
+        if not len(eleve_result):
             continue
         eleve_result = eleve_result.iloc[0]
     tm = int(eleve_result["Choice"])

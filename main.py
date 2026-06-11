@@ -4,12 +4,12 @@
 # ============================================================================
 DIR = "Donnees_TMs/Annee_1"
 INPUT_FILE = f"{DIR}/grid.csv"  # Fichier CSV contenant la grille des préférences
-OUTPUT_DIR = f"{DIR}/results"  # Répertoire pour les résultats
+OUTPUT_DIR = f"{DIR}/results2"  # Répertoire pour les résultats
 OUTPUT_FILE = f"{OUTPUT_DIR}/o2.csv"  # Fichier de résumé des résultats
 TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
 DUO_FILE = f"{DIR}/duo.csv"  # Fichier des binômes d'élèves
-NPROBLEMS_ELEVES_FILE = f"{DIR}/nproblems_eleves.csv"  # Fichier pour enregistrer les problèmes rencontrés
-NPROBLEMS_TM_FILE = f"{DIR}/nproblems_tm.csv"  # Fichier pour enregistrer les problèmes par TM
+NPROBLEMS_ELEVES_FILE = f"{DIR}/nproblems_eleves2.csv"  # Fichier pour enregistrer les problèmes rencontrés
+NPROBLEMS_TM_FILE = f"{DIR}/nproblems_tm2.csv"  # Fichier pour enregistrer les problèmes par TM
 N_TRIES = 1000  # Nombre de tentatives d'allocation
 
 RANDOM_SEED = 67  # Graine pour la reproductibilité
