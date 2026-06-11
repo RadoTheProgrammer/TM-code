@@ -51,11 +51,14 @@ df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")  # Séparer les élèves 
 df_duo["Repr"] = df_duo["Eleves"].str[0]  # Représentant = premier élève du binôme
 
 # Initialiser les résultats
-results = {"Id": [], "Mean": [], "Std": [], "Problems": [], "TMnonouverts": []}
+
 # Créer ou nettoyer le répertoire de résultats
 if os.path.exists(OUTPUT_DIR):
-    shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
+    i_try = len(os.listdir(OUTPUT_DIR))-1
+    results = pd.read_csv(OUTPUT_FILE).to_dict(orient="list")
 else:
+    i_try = 0
+    results = {"Id": [], "Mean": [], "Std": [], "Problems": [], "TMnonouverts": []}
     os.mkdir(OUTPUT_DIR)
 
 def generate():
@@ -213,9 +216,10 @@ def generate():
         print(len(df_decision_data))
 try:
     max_l2 = 0
-    for i_try in range(N_TRIES):
-        print(i_try)
+
+    for _ in range(N_TRIES):
         l2 = generate()
+        i_try += 1
 finally:
     df_results = pd.DataFrame(results)
     df_results.to_csv(OUTPUT_FILE,index=False)
