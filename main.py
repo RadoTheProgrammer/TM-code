@@ -10,7 +10,7 @@ TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
 DUO_FILE = f"{DIR}/duo.csv"  # Fichier des binômes d'élèves
 NPROBLEMS_ELEVES_FILE = f"{DIR}/nproblems_eleves2.csv"  # Fichier pour enregistrer les problèmes rencontrés
 NPROBLEMS_TM_FILE = f"{DIR}/nproblems_tm2.csv"  # Fichier pour enregistrer les problèmes par TM
-N_TRIES = 1000  # Nombre de tentatives d'allocation
+N_TRIES = 10000   # Nombre de tentatives d'allocation
 
 RANDOM_SEED = 67  # Graine pour la reproductibilité
 

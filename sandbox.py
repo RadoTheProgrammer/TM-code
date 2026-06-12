@@ -1,11 +1,21 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
-df = pd.DataFrame({
-    "Id": [1, 2, 3],
-    "Mean": [0.5, 0.7, 0.3],
-    "Std": [0.1, 0.2, 0.15],
-    "Problems": [0, 1, 2],
-    "TMnonouverts": [1, 0, 2]
-})
+df = pd.read_csv(r"Donnees_TMs\Annee_1\results2\o2.csv")
 
-print(df.to_dict(orient="dict"))
+def is_empty_problems(value):
+    if value == []:
+        return True
+    if isinstance(value, str):
+        b = value.strip() == "[]"
+        if b:
+            pass
+        return b
+    return False
+
+problem_success = df['Problems'].apply(is_empty_problems)
+df['SuccessRate'] = problem_success.rolling(100).mean()
+
+plt.plot(df['Id'], df['SuccessRate'])
+
+plt.show()
