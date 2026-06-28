@@ -1,6 +1,6 @@
 N° TM,Maître c,Langue,Individuel/groupe/ indifférent,Nombre minimal travaux,Nombre maximal travaux
 1,,Français,Indifférent,3,10
-2,,Français/A,Indifférent,,6
+2,,Français/Allemand,Indifférent,,6
 3,,Français,groupe,3,5
 4,,Français/Anglais,Indifférent,1,8
 5,,Anglais,individuel,2,8
@@ -11,14 +11,14 @@ N° TM,Maître c,Langue,Individuel/groupe/ indifférent,Nombre minimal travaux,N
 10,,Anglais,individuel,2,4
 11,,Français,indifférent,,6
 12,,Français,Indifférent,,8
-13,,Français/Anglais,groupe,8,12
+13,,Français/Anglais,Indifférent,8,12
 14,,Français,individuel,2,6
 15,,Français/Anglais,indifférent,6,10
 16,,Français,indifférent,8,20
 17,,Allemand,Indifférent,2,4
 18,,Allemand,indifférent,2,8
 19,,Français,indifférent,1,2
-20,,Français,groupe,3,8
+20,,Français,Indifférent,3,8
 21,,Français,Indifférent,1,8
 22,,Français,Indifférent,,8
 23,,Français,individuel,,8
