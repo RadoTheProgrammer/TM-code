@@ -2,24 +2,14 @@
 # ============================================================================
 # Configuration des chemins et paramètres
 # ============================================================================
-DIR = "Donnees_TMs/Annee_2"
-GRID_FILE = f"{DIR}/grid.csv"  # Fichier CSV contenant la grille des préférences
-OUTPUT_DIR = f"{DIR}/results"  # Répertoire pour les résultats
-OUTPUT_FILE = f"{OUTPUT_DIR}/o2.csv"  # Fichier de résumé des résultats
-TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
-DUO_FILE = f"{DIR}/duo.csv"  # Fichier des binômes d'élèves
-NPROBLEMS_ELEVES_FILE = f"{DIR}/nproblems_eleves.csv"  # Fichier pour enregistrer les problèmes rencontrés
-NPROBLEMS_TM_FILE = f"{DIR}/nproblems_tm.csv"  # Fichier pour enregistrer les problèmes par TM
-N_TRIES = 10000   # Nombre de tentatives d'allocation
 
-RANDOM_SEED = 67  # Graine pour la reproductibilité
 
 import os
 import random
 import pandas as pd
 import shutil
 import numpy as np
-
+from settings import *
 # ============================================================================
 # Initialisation des données
 # ============================================================================
@@ -214,14 +204,19 @@ def generate_single():
         # Si l'affectation est incomplète, afficher les diagnostics.
         print(len(df_grid))
         print(len(df_decision_data))
-try:
-    max_l2 = 0
 
-    for _ in range(N_TRIES):
-        l2 = generate_single()
-        i_try += 1
-finally:
-    df_results = pd.DataFrame(results)
-    df_results.to_csv(OUTPUT_FILE,index=False)
-    nproblems_eleves.to_csv(NPROBLEMS_ELEVES_FILE)
-    nproblems_tm.to_csv(NPROBLEMS_TM_FILE)
+def generate():
+    try:
+        max_l2 = 0
+
+        for _ in range(N_TRIES):
+            l2 = generate_single()
+            i_try += 1
+    finally:
+        df_results = pd.DataFrame(results)
+        df_results.to_csv(OUTPUT_FILE,index=False)
+        nproblems_eleves.to_csv(NPROBLEMS_ELEVES_FILE)
+        nproblems_tm.to_csv(NPROBLEMS_TM_FILE)
+
+if __name__ == "__main__":
+    generate()
