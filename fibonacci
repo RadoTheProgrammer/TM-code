@@ -1,0 +1,19 @@
+import matplotlib.pyplot as plt
+
+def get_fibonacci(n):
+    numbers = [0, 1]
+    fractions = []
+    for i in range(2, n):
+        next_number = numbers[i - 1] + numbers[i - 2]
+        numbers.append(next_number)
+        fractions.append(next_number / numbers[i - 1])
+    return numbers, fractions
+
+numbers,fractions = get_fibonacci(100)
+
+plt.plot(fractions)
+plt.title('Fibonacci Sequence Ratios')
+plt.xlabel('Index')
+plt.ylabel('Ratio')
+
+plt.show()

@@ -3,7 +3,7 @@
 # Configuration des chemins et paramètres
 # ============================================================================
 DIR = "Donnees_TMs/Annee_2"
-INPUT_FILE = f"{DIR}/grid.csv"  # Fichier CSV contenant la grille des préférences
+GRID_FILE = f"{DIR}/grid.csv"  # Fichier CSV contenant la grille des préférences
 OUTPUT_DIR = f"{DIR}/results"  # Répertoire pour les résultats
 OUTPUT_FILE = f"{OUTPUT_DIR}/o2.csv"  # Fichier de résumé des résultats
 TM_FILE = f"{DIR}/liste_sujets.csv"  # Fichier liste des travaux de maturité
@@ -24,7 +24,7 @@ import numpy as np
 # Initialisation des données
 # ============================================================================
 rng = np.random.default_rng(RANDOM_SEED)  # Générateur aléatoire
-df_grid_orig = pd.read_csv(INPUT_FILE, index_col=0)  # Charger la grille originale
+df_grid_orig = pd.read_csv(GRID_FILE, index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
 if os.path.exists(NPROBLEMS_ELEVES_FILE):
     nproblems_eleves = pd.read_csv(NPROBLEMS_ELEVES_FILE, index_col=0).iloc[:,0]
@@ -61,7 +61,7 @@ else:
     results = {"Id": [], "Mean": [], "Std": [], "Problems": [], "TMnonouverts": []}
     os.mkdir(OUTPUT_DIR)
 
-def generate():
+def generate_single():
     global max_l2,best_mean,best_std
     
     """Génère une tentative d'attribution pour tous les TMs.
@@ -218,7 +218,7 @@ try:
     max_l2 = 0
 
     for _ in range(N_TRIES):
-        l2 = generate()
+        l2 = generate_single()
         i_try += 1
 finally:
     df_results = pd.DataFrame(results)
