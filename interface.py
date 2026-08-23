@@ -1,4 +1,5 @@
 import os
+import threading
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import algorithme
@@ -53,10 +54,14 @@ class SettingsEditor:
 
         self._build_form()
 
+        self.progress_text = tk.Text(main, height=8, wrap="word", state="disabled")
+        self.progress_text.pack(fill="both", expand=True, pady=(8, 0))
+
         actions = ttk.Frame(main)
         actions.pack(fill="x", pady=(12, 0))
 
-        ttk.Button(actions, text="Générer", command=self.generate).pack(side="right")
+        self.generate_button = ttk.Button(actions, text="Générer", command=self.generate)
+        self.generate_button.pack(side="right")
         ttk.Button(actions, text="Fermer", command=self.master.destroy).pack(side="right", padx=(0, 8))
 
     def _load_original_values(self):
@@ -99,6 +104,15 @@ class SettingsEditor:
         if filename:
             variable.set(filename)
 
+    def append_progress(self, message):
+        self.master.after(0, self._append_progress, message)
+
+    def _append_progress(self, message):
+        self.progress_text.configure(state="normal")
+        self.progress_text.insert("end", message + "\n")
+        self.progress_text.see("end")
+        self.progress_text.configure(state="disabled")
+
     def generate(self):
         for name, var in self.fields.items():
             value = var.get()
@@ -109,11 +123,23 @@ class SettingsEditor:
         with open("settings.json", "w") as f:
             json.dump(self.original_values, f, indent=4)
 
-        try:
-            algorithme.generate()
-            messagebox.showinfo("Succès", "L'algorithme a été exécuté avec succès.")
-        except Exception as e:
-            messagebox.showerror("Erreur", f"Une erreur s'est produite lors de l'exécution de l'algorithme:\n{e}")
+        self.progress_text.configure(state="normal")
+        self.progress_text.delete("1.0", "end")
+        self.progress_text.insert("end", "Démarrage de l'algorithme...\n")
+        self.progress_text.configure(state="disabled")
+        self.generate_button.config(state="disabled")
+
+        def run_generation():
+            try:
+                algorithme.set_progress_callback(self.append_progress)
+                algorithme.generate()
+                self.master.after(0, lambda: messagebox.showinfo("Succès", "L'algorithme a été exécuté avec succès."))
+            except Exception as e:
+                self.master.after(0, lambda: messagebox.showerror("Erreur", f"Une erreur s'est produite lors de l'exécution de l'algorithme:\n{e}"))
+            finally:
+                self.master.after(0, lambda: self.generate_button.config(state="normal"))
+
+        threading.Thread(target=run_generation, daemon=True).start()
 
 
 if __name__ == "__main__":

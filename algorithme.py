@@ -26,6 +26,13 @@ else:
     nproblems_eleves = pd.Series(0.0, index=df_grid_orig.index)  # Initialiser le compteur de problèmes pour chaque élève
 
 default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
+progress_callback = None
+
+
+def set_progress_callback(callback):
+    global progress_callback
+    progress_callback = callback
+
 
 # Charger les travaux de maturité et supprimer le dernier (TM libre)
 df_tm = pd.read_csv(settings_data["TM_FILE"], index_col=0)
@@ -202,7 +209,10 @@ def generate_single():
         results["Std"].append(std)
         results["Problems"].append(problems)
         results["TMnonouverts"].append(TM_non_ouverts)
-        print(f"Try {i_try}: mean={mean}, std={std}, problems={problems}, non ouverts={TM_non_ouverts}")
+        message = f"Try {i_try}: mean={mean}, std={std}, problems={problems}, non ouverts={TM_non_ouverts}"
+        if progress_callback is not None:
+            progress_callback(message)
+        print(message)
     else:
         # Si l'affectation est incomplète, afficher les diagnostics.
         print(len(df_grid))
