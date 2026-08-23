@@ -9,15 +9,18 @@ import random
 import pandas as pd
 import shutil
 import numpy as np
-from settings import *
+import json
+
+with open("settings.json", "r") as f:
+    settings_data = json.load(f)
 # ============================================================================
 # Initialisation des données
 # ============================================================================
-rng = np.random.default_rng(RANDOM_SEED)  # Générateur aléatoire
-df_grid_orig = pd.read_csv(GRID_FILE, index_col=0)  # Charger la grille originale
+rng = np.random.default_rng(settings_data["RANDOM_SEED"])  # Générateur aléatoire
+df_grid_orig = pd.read_csv(settings_data["GRID_FILE"], index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
-if os.path.exists(NPROBLEMS_ELEVES_FILE):
-    nproblems_eleves = pd.read_csv(NPROBLEMS_ELEVES_FILE, index_col=0).iloc[:,0]
+if os.path.exists(settings_data["NPROBLEMS_ELEVES_FILE"]):
+    nproblems_eleves = pd.read_csv(settings_data["NPROBLEMS_ELEVES_FILE"], index_col=0).iloc[:,0]
     nproblems_eleves.index = nproblems_eleves.index.astype(str)
 else:
     nproblems_eleves = pd.Series(0.0, index=df_grid_orig.index)  # Initialiser le compteur de problèmes pour chaque élève
@@ -25,31 +28,31 @@ else:
 default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
 
 # Charger les travaux de maturité et supprimer le dernier (TM libre)
-df_tm = pd.read_csv(TM_FILE, index_col=0)
+df_tm = pd.read_csv(settings_data["TM_FILE"], index_col=0)
 #df_tm.index = df_tm.index.astype(str)
 df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs libres
 
 
-if os.path.exists(NPROBLEMS_TM_FILE):
-    nproblems_tm = pd.read_csv(NPROBLEMS_TM_FILE, index_col=0).iloc[:,0]
+if os.path.exists(settings_data["NPROBLEMS_TM_FILE"]):
+    nproblems_tm = pd.read_csv(settings_data["NPROBLEMS_TM_FILE"], index_col=0).iloc[:,0]
 
 else:
     nproblems_tm = pd.Series(0.0, index=df_tm.index)  # Initialiser le compteur de problèmes pour chaque TM
 # Charger les binômes et traiter les données
-df_duo = pd.read_csv(DUO_FILE)
+df_duo = pd.read_csv(settings_data["DUO_FILE"])
 df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")  # Séparer les élèves en liste
 df_duo["Repr"] = df_duo["Eleves"].str[0]  # Représentant = premier élève du binôme
 
 # Initialiser les résultats
 
 # Créer ou nettoyer le répertoire de résultats
-if os.path.exists(OUTPUT_DIR):
-    i_try = len(os.listdir(OUTPUT_DIR))-1
-    results = pd.read_csv(OUTPUT_FILE).to_dict(orient="list")
+if os.path.exists(settings_data["OUTPUT_DIR"]):
+    i_try = len(os.listdir(settings_data["OUTPUT_DIR"]))-1
+    results = pd.read_csv(settings_data["OUTPUT_FILE"]).to_dict(orient="list")
 else:
     i_try = 0
     results = {"Id": [], "Mean": [], "Std": [], "Problems": [], "TMnonouverts": []}
-    os.mkdir(OUTPUT_DIR)
+    os.mkdir(settings_data["OUTPUT_DIR"])
 
 def generate_single():
     global max_l2,best_mean,best_std
@@ -74,6 +77,7 @@ def generate_single():
     for i_tm,tm in df_tm.sample(frac=1,weights=nproblems_tm+1,random_state=rng).iterrows():
 
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
+        i_tm = int(i_tm) # type: ignore
         mask = df_grid[str(i_tm)] > 0
 
         candidats = df_grid[mask]
@@ -86,7 +90,6 @@ def generate_single():
 
         # Binômes qui ont choisi ce TM.
 
-        # Binômes qui ont choisi ce TM.
         duos = df_duo[df_duo["Choix"]==i_tm]
 
         # Calculer les poids comme le rapport entre le score du choix courant et
@@ -191,7 +194,7 @@ def generate_single():
 
     if len(df_grid)==len(df_decision_data):
         # Affectation réussie : enregistrer les résultats et mettre à jour les métriques.
-        df_decision_data.to_csv(f"{OUTPUT_DIR}/r{i_try}.csv",index=False)
+        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{i_try}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
         std = df_decision_data["ChoiceWeight"].std()
         results["Id"].append(i_try)
@@ -209,14 +212,14 @@ def generate():
     global i_try
     try:
         max_l2 = 0
-        for _ in range(N_TRIES):
+        for _ in range(settings_data["N_TRIES"]):
             l2 = generate_single()
             i_try += 1
     finally:
         df_results = pd.DataFrame(results)
-        df_results.to_csv(OUTPUT_FILE,index=False)
-        nproblems_eleves.to_csv(NPROBLEMS_ELEVES_FILE)
-        nproblems_tm.to_csv(NPROBLEMS_TM_FILE)
+        df_results.to_csv(settings_data["OUTPUT_FILE"],index=False)
+        nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
+        nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
 
 if __name__ == "__main__":
     generate()

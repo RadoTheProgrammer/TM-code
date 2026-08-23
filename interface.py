@@ -2,8 +2,19 @@ import os
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import algorithme
-import settings
+import json
 
+
+settings_description = {
+    "GRID_FILE": "Fichier CSV contenant la grille des élèves.",
+    "TM_FILE": "Fichier CSV contenant les travaux de maturité.",
+    "DUO_FILE": "Fichier CSV contenant les binômes d'élèves.",
+    "NPROBLEMS_ELEVES_FILE": "Fichier CSV contenant le nombre de problèmes par élève.",
+    "NPROBLEMS_TM_FILE": "Fichier CSV contenant le nombre de problèmes par TM.",
+    "OUTPUT_DIR": "Répertoire où seront enregistrés les résultats.",
+    "OUTPUT_FILE": "Fichier CSV où seront enregistrés les résultats.",
+    "RANDOM_SEED": "Graine pour le générateur aléatoire (entier).",
+}
 
 class SettingsEditor:
     def __init__(self, master:tk.Tk):
@@ -25,6 +36,8 @@ class SettingsEditor:
 
         canvas = tk.Canvas(main, highlightthickness=0)
         scrollbar = ttk.Scrollbar(main, orient="vertical", command=canvas.yview)
+        # Container for all setting rows; placing it inside the canvas makes the
+        # form scrollable while keeping the scrollbar attached to the canvas.
         self.form_frame = ttk.Frame(canvas)
 
         self.form_frame.bind(
@@ -47,31 +60,28 @@ class SettingsEditor:
         ttk.Button(actions, text="Fermer", command=self.master.destroy).pack(side="right", padx=(0, 8))
 
     def _load_original_values(self):
-        for name in dir(settings):
-            if name.isupper() and not name.startswith("__"):
-                self.original_values[name] = getattr(settings, name)
+        with open("settings.json", "r") as f:
+            self.original_values = json.load(f)
 
     def _is_file_setting(self, name, value):
         if name.endswith("_FILE") or name.endswith("_DIR"):
             return True
-        if isinstance(value, str):
-            lowered = value.lower()
-            if lowered.endswith((".csv", ".txt", ".json", ".xlsx", ".xls", ".xml")):
-                return True
         return False
 
     def _build_form(self):
         for name in sorted(self.original_values):
             value = self.original_values[name]
+            
             row = ttk.Frame(self.form_frame, padding=(0, 4))
+
             row.pack(fill="x")
 
-            label = ttk.Label(row, text=name, width=26, anchor="w")
+            label = ttk.Label(row, text=settings_description.get(name, name), width=40, anchor="w")
             label.pack(side="left")
 
             var = tk.StringVar(value=str(value))
             entry = ttk.Entry(row, textvariable=var)
-            entry.pack(side="left", fill="x", expand=True, padx=(10, 6))
+            entry.pack(side="left", fill="x", expand=True, padx=(40, 6))
 
             if self._is_file_setting(name, value):
                 button = ttk.Button(row, text="Parcourir", command=lambda n=name, v=var: self.choose_file(n, v))
@@ -94,7 +104,10 @@ class SettingsEditor:
             value = var.get()
             if value.isdigit():
                 value = int(value)
-            setattr(settings, name, value)
+            self.original_values[name] = value
+
+        with open("settings.json", "w") as f:
+            json.dump(self.original_values, f, indent=4)
 
         try:
             algorithme.generate()
