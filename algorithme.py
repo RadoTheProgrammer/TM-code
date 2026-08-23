@@ -206,9 +206,9 @@ def generate_single():
         print(len(df_decision_data))
 
 def generate():
+    global i_try
     try:
         max_l2 = 0
-
         for _ in range(N_TRIES):
             l2 = generate_single()
             i_try += 1
