@@ -1,5 +1,5 @@
 {
-    "DIR": "Donnees_TMs/Annee_1",
+    "DIR": "Donnees_TMs/Annee_2",
     "GRID_FILE": "Donnees_TMs/Annee_2/grid.csv",
     "OUTPUT_DIR": "Donnees_TMs/Annee_2/results",
     "OUTPUT_FILE": "Donnees_TMs/Annee_2/results/o2.csv",
