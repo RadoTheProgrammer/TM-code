@@ -74,7 +74,15 @@ def generate_single():
     # Parcourir les TMs dans un ordre aléatoire en utilisant le générateur fixe.
     # i_tm: int
     #print(nproblems_tm+1)
-    for i_tm,tm in df_tm.sample(frac=1,weights=nproblems_tm+1,random_state=rng).iterrows():
+
+    def shuffle_tm():
+
+        u = np.random.random(len(df_tm))
+        keys = -np.log(u) / (nproblems_tm+1).to_numpy()
+
+        df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
+        return df_tm_shuffled
+    for i_tm,tm in shuffle_tm().iterrows():
 
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
         i_tm = int(i_tm) # type: ignore
@@ -147,7 +155,7 @@ def generate_single():
                 pass
             weights[forced_bool] = 0 
             n_to_assign = maximum-len(forced)
-
+            print(maximum-len(forced))
             if n_to_assign>=0:
                 selected2 = candidats.sample(maximum-len(forced),weights=weights,random_state=rng)
                 selected = pd.concat([forced,selected2])
