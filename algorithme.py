@@ -17,6 +17,7 @@ with open("settings.json", "r") as f:
 # Initialisation des données
 # ============================================================================
 rng = np.random.default_rng(settings_data["RANDOM_SEED"])  # Générateur aléatoire
+np.random.seed(settings_data["RANDOM_SEED"])
 df_grid_orig = pd.read_csv(settings_data["GRID_FILE"], index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
 if os.path.exists(settings_data["NPROBLEMS_ELEVES_FILE"]):
@@ -48,12 +49,41 @@ df_duo["Repr"] = df_duo["Eleves"].str[0]  # Représentant = premier élève du b
 # Créer ou nettoyer le répertoire de résultats
 if os.path.exists(settings_data["OUTPUT_DIR"]):
     i_try = len(os.listdir(settings_data["OUTPUT_DIR"]))-1
-    results = pd.read_csv(settings_data["OUTPUT_FILE"]).to_dict(orient="list")
+    
 else:
     i_try = 0
-    results = {"Id": [], "Mean": [], "Std": [], "Problems": [], "TMnonouverts": []}
     os.mkdir(settings_data["OUTPUT_DIR"])
+if os.path.exists(settings_data["OUTPUT_FILE"]):
+    results = pd.read_csv(settings_data["OUTPUT_FILE"]).to_dict(orient="list")
+else:
+    results = {col: [] for col in [
+        "Id", 
+        "Mean", 
+        "Std", 
+        "Problems", 
+        "TMnonouverts", 
+        "NbEnvie1", 
+        "NbEnvie2", 
+        "NbEnvie3", 
+        "Problems_nonattribue",
+        "Problems_pasassez",
+        "Problems_tropnombreux",
+        "Problems_"]}
 
+def numpy_sample(population, weights, k, random_state):
+    """
+    Échantillonne k éléments de la population en utilisant les poids donnés.
+
+    Args:
+        population (list): Liste des éléments à échantillonner.
+        weights (list): Liste des poids correspondants à chaque élément.
+        k (int): Nombre d'éléments à échantillonner.
+        random_state (int): Graine pour la reproductibilité.
+
+    Returns:
+        list: Liste des éléments échantillonnés.
+    """
+    return np.random.choice(population, size=k, replace=False, p=weights/np.sum(weights))
 def generate_single():
     global max_l2,best_mean,best_std
     
@@ -82,6 +112,27 @@ def generate_single():
 
         df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         return df_tm_shuffled
+
+    def select_candidates():
+        #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
+        selected_index = numpy_sample(candidats.index, weights, max(0, int(maximum-len(forced))), rng)
+        # try:
+        #     selected = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
+        # # selected_unique = selected[~selected.index.duplicated(keep="first")]
+        # # if len(selected_unique)<minimum-len(forced):
+        # #     pass
+        # #     problems.append((i_tm,f"Pas assez après duplication : {len(selected_unique)}<{minimum-len(forced)}"))
+        # #     nproblems_tm[i_tm] += 1
+        # except ValueError as e:
+        #     if settings_data["FORCE_MIN"]:
+        #         u = np.random.random(len(candidats))
+        #         keys = -np.log(u) / (nproblems_tm+1).to_numpy()
+
+        #         df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
+        #     problems.append((i_tm,"Impossible de sélectionner le nombre requis de candidats"))
+        #     nproblems_tm[i_tm] += 1
+        #     selected = default_df
+        return candidats.loc[selected_index]
     for i_tm,tm in shuffle_tm().iterrows():
 
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
@@ -135,7 +186,9 @@ def generate_single():
 
         # Choisir les candidats selon les contraintes minimum/maximum.
         minimum = tm["Nombre minimal travaux"]
-        if not pd.isna(minimum) and n_candidats<minimum:
+        if pd.isna(minimum):
+            minimum = 0
+        if n_candidats<minimum:
             forced = candidats[weights==np.inf]
             if i_tm==16:
                 pass
@@ -155,9 +208,10 @@ def generate_single():
                 pass
             weights[forced_bool] = 0 
             n_to_assign = maximum-len(forced)
-            print(maximum-len(forced))
+            n_min_to_assign = minimum-len(forced)
+            #print(maximum-len(forced))
             if n_to_assign>=0:
-                selected2 = candidats.sample(maximum-len(forced),weights=weights,random_state=rng)
+                selected2 = select_candidates()
                 selected = pd.concat([forced,selected2])
             else:
                 problems.append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
@@ -167,6 +221,9 @@ def generate_single():
             if i_tm==4:
                 pass
             selected = candidats[weights!=0]
+
+        # Supprimer les éventuels doublons de candidats sélectionnés.
+        selected = selected[~selected.index.duplicated(keep="first")]
 
         # Pour chaque candidat, indiquer s'il est sélectionné ou non et mettre à jour la grille.
         repr = duos["Repr"].values
@@ -210,6 +267,9 @@ def generate_single():
         results["Std"].append(std)
         results["Problems"].append(problems)
         results["TMnonouverts"].append(TM_non_ouverts)
+        for n_envie in [1,2,3]:
+            
+            results[f"NbEnvie{n_envie}"].append((df_decision_data["Choice"]==n_envie).sum())
         print(f"Try {i_try}: mean={mean}, std={std}, problems={problems}, non ouverts={TM_non_ouverts}")
     else:
         # Si l'affectation est incomplète, afficher les diagnostics.
