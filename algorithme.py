@@ -60,15 +60,13 @@ else:
         "Id", 
         "Mean", 
         "Std", 
-        "Problems", 
         "TMnonouverts", 
         "NbEnvie1", 
         "NbEnvie2", 
         "NbEnvie3", 
         "Problems_nonattribue",
         "Problems_pasassez",
-        "Problems_tropnombreux",
-        "Problems_"]}
+        "Problems_tropnombreux"]}
 
 def numpy_sample(population, weights, k, random_state):
     """
@@ -97,7 +95,7 @@ def generate_single():
     # Copie de travail de la grille de préférences originale pour cette tentative.
     df_grid = df_grid_orig.copy()
     
-    problems = []
+    problems = {"nonattribue": [], "pasassez": [], "tropnombreux": []}
     TM_non_ouverts = []
     decision_data = {"Id": [], "Choice": [], "ChoiceWeight": []}
 
@@ -165,7 +163,7 @@ def generate_single():
                 # Si un membre n'a pas d'alternative disponible et l'autre est forcé,
                 # enregistrer le problème et marquer le binôme comme non affecté.
                 for eleve in weights_duo[weights_duo==np.inf].index:
-                    problems.append(f"{eleve} non attribué")
+                    problems["nonattribue"].append(f"{eleve} non attribué")
                     nproblems_eleves[eleve] += 1
                     decision_data["Id"].append(eleve)
                     decision_data["Choice"].append(0)
@@ -197,7 +195,7 @@ def generate_single():
                 TM_non_ouverts.append(i_tm)
             else:
                 selected = forced
-                problems.append((i_tm,f"Pas assez : {len(forced)}<{minimum}"))
+                problems["pasassez"].append((i_tm,f"Pas assez : {len(forced)}<{minimum}"))
                 nproblems_tm[i_tm] += 1
         elif maximum<n_candidats:
             forced_bool = weights==np.inf
@@ -214,7 +212,7 @@ def generate_single():
                 selected2 = select_candidates()
                 selected = pd.concat([forced,selected2])
             else:
-                problems.append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
+                problems["tropnombreux"].append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
                 selected = forced
                 nproblems_tm[i_tm] += 1
         else:
@@ -265,12 +263,15 @@ def generate_single():
         results["Id"].append(i_try)
         results["Mean"].append(mean)
         results["Std"].append(std)
-        results["Problems"].append(problems)
+        results["Problems_nonattribue"].append(len(problems["nonattribue"]))
+        results["Problems_pasassez"].append(len(problems["pasassez"]))
+        results["Problems_tropnombreux"].append(len(problems["tropnombreux"]))
         results["TMnonouverts"].append(TM_non_ouverts)
         for n_envie in [1,2,3]:
             
             results[f"NbEnvie{n_envie}"].append((df_decision_data["Choice"]==n_envie).sum())
-        print(f"Try {i_try}: mean={mean}, std={std}, problems={problems}, non ouverts={TM_non_ouverts}")
+        print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
+
     else:
         # Si l'affectation est incomplète, afficher les diagnostics.
         print(len(df_grid))
