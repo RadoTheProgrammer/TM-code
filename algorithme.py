@@ -105,12 +105,12 @@ def generate_single():
 
     def shuffle_tm():
 
-        u = np.random.random(len(df_tm))
-        keys = -np.log(u) / (nproblems_tm+1).to_numpy()
+        # u = np.random.random(len(df_tm))
+        # keys = -np.log(u) / (nproblems_tm+1).to_numpy()
 
-        df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
-        return df_tm_shuffled
-
+        # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
+        # return df_tm_shuffled
+        return df_tm.loc[numpy_sample(df_tm.index, nproblems_tm+1, len(df_tm), rng)]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         selected_index = numpy_sample(candidats.index, weights, max(0, int(maximum-len(forced))), rng)

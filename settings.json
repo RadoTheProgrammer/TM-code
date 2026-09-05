@@ -1,8 +1,8 @@
 {
     "DIR": "Donnees_TMs/Annee_2",
     "GRID_FILE": "Donnees_TMs/Annee_2/grid.csv",
-    "OUTPUT_DIR": "Donnees_TMs/Annee_2/resultslearned",
-    "OUTPUT_FILE": "Donnees_TMs/Annee_2/resultslearned/o.csv",
+    "OUTPUT_DIR": "Donnees_TMs/Annee_2/resultslearned2",
+    "OUTPUT_FILE": "Donnees_TMs/Annee_2/resultslearned2/o.csv",
     "TM_FILE": "Donnees_TMs/Annee_2/liste_sujets.csv",
     "DUO_FILE": "Donnees_TMs/Annee_2/duo.csv",
     "NPROBLEMS_ELEVES_FILE": "Donnees_TMs/Annee_2/nproblems_eleves.csv",
