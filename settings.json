@@ -7,6 +7,7 @@
     "DUO_FILE": "Donnees_TMs/Annee_2/duo.csv",
     "NPROBLEMS_ELEVES_FILE": "Donnees_TMs/Annee_2/nproblems_eleves.csv",
     "NPROBLEMS_TM_FILE": "Donnees_TMs/Annee_2/nproblems_tm_df.csv",
+    "ELEVES_FILE": "Donnees_TMs/Annee_2/voeux_eleves.csv",
     "N_TRIES": 10000,
     "RANDOM_SEED": 67
 }

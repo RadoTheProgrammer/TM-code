@@ -6,14 +6,10 @@ import json
 
 
 settings_description = {
-    "GRID_FILE": "Fichier CSV contenant la grille des élèves.",
     "TM_FILE": "Fichier CSV contenant les travaux de maturité.",
-    "DUO_FILE": "Fichier CSV contenant les binômes d'élèves.",
-    "NPROBLEMS_ELEVES_FILE": "Fichier CSV contenant le nombre de problèmes par élève.",
-    "NPROBLEMS_TM_FILE": "Fichier CSV contenant le nombre de problèmes par TM.",
     "OUTPUT_DIR": "Répertoire où seront enregistrés les résultats.",
     "OUTPUT_FILE": "Fichier CSV où seront enregistrés les résultats.",
-    "RANDOM_SEED": "Graine pour le générateur aléatoire (entier).",
+    "ELEVES_FILE": "Fichier CSV contenant les voeux des élèves.",
 }
 
 class SettingsEditor:
@@ -69,12 +65,21 @@ class SettingsEditor:
         return False
 
     def _build_form(self):
-        for name in sorted(self.original_values):
+        for name in ("TM_FILE", "OUTPUT_DIR", "OUTPUT_FILE", "ELEVES_FILE"):
             value = self.original_values[name]
-            
-            row = ttk.Frame(self.form_frame, padding=(0, 4))
+            # row = tk.Frame(
+            #     self.form_frame,
+            #     bg="red",
+            #     padx=0,
+            #     pady=12,
+            # )
+            # row.pack(fill="x", pady=0)
 
-            row.pack(fill="x")
+            row = tk.Frame(self.form_frame, bg="red")
+            row.pack(fill="x", pady=12)
+            #row = ttk.Frame(self.form_frame, bg="red",padding=(0, 12))
+
+            #row.pack(fill="x",pady=0)
 
             label = ttk.Label(row, text=settings_description.get(name, name), width=40, anchor="w")
             label.pack(side="left")
