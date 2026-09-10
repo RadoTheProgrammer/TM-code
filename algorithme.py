@@ -35,10 +35,10 @@ df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs lib
 
 
 if os.path.exists(settings_data["NPROBLEMS_TM_FILE"]):
-    nproblems_tm = pd.read_csv(settings_data["NPROBLEMS_TM_FILE"], index_col=0).iloc[:,0]
+    nproblems_tm = pd.read_csv(settings_data["NPROBLEMS_TM_FILE"], index_col=0)
 
 else:
-    nproblems_tm = pd.Series(0.0, index=df_tm.index)  # Initialiser le compteur de problèmes pour chaque TM
+    nproblems_tm = pd.DataFrame(0.0, index=df_tm.index, columns=["tropnombreux","pasassez"])
 # Charger les binômes et traiter les données
 df_duo = pd.read_csv(settings_data["DUO_FILE"])
 df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")  # Séparer les élèves en liste
@@ -110,7 +110,7 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
-        return df_tm.loc[numpy_sample(df_tm.index, nproblems_tm+1, len(df_tm), rng)]
+        return df_tm.loc[numpy_sample(df_tm.index, nproblems_tm.sum(axis=1)+1, len(df_tm), rng)]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         selected_index = numpy_sample(candidats.index, weights, max(0, int(maximum-len(forced))), rng)
@@ -131,6 +131,7 @@ def generate_single():
         #     nproblems_tm[i_tm] += 1
         #     selected = default_df
         return candidats.loc[selected_index]
+    i = 0
     for i_tm,tm in shuffle_tm().iterrows():
 
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
@@ -196,7 +197,9 @@ def generate_single():
             else:
                 selected = forced
                 problems["pasassez"].append((i_tm,f"Pas assez : {len(forced)}<{minimum}"))
-                nproblems_tm[i_tm] += 1
+                nproblems_tm.loc[i_tm, "pasassez"] = (
+                    pd.to_numeric(nproblems_tm.loc[i_tm, "pasassez"], errors="coerce") + 1
+                )
         elif maximum<n_candidats:
             forced_bool = weights==np.inf
             forced = candidats[forced_bool]
@@ -213,8 +216,13 @@ def generate_single():
                 selected = pd.concat([forced,selected2])
             else:
                 problems["tropnombreux"].append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
+                weights_tm = nproblems_tm.sum(axis=1)+1
+                prob = weights_tm[i_tm]/np.sum(weights_tm)
+                print(problems["tropnombreux"][-1],i/len(df_tm),prob)
                 selected = forced
-                nproblems_tm[i_tm] += 1
+                nproblems_tm.loc[i_tm, "tropnombreux"] = (
+                    pd.to_numeric(nproblems_tm.loc[i_tm, "tropnombreux"], errors="coerce") + 1
+                )
         else:
             if i_tm==4:
                 pass
@@ -248,7 +256,7 @@ def generate_single():
                     df_grid.at[nom_eleve,str(i_tm)] = choice_weight
                 else:
                     df_grid.at[nom_eleve,str(i_tm)] = np.nan
-
+        i += 1
     # Construire le DataFrame des décisions à partir des choix collectés.
     df_decision_data = pd.DataFrame(decision_data)
     for nom_eleve in df_grid.index:
