@@ -1,5 +1,6 @@
 import os
 import csv
+import threading
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import algorithme
@@ -22,7 +23,8 @@ class SettingsEditor:
 
         self.original_values = {}
         self.fields = {}
-
+        self.generating = False
+        self.stop_requested = False
         self._load_original_values()
 
         main = ttk.Frame(master, padding=12)
@@ -54,7 +56,11 @@ class SettingsEditor:
         actions = ttk.Frame(main)
         actions.pack(fill="x", pady=(12, 0))
 
-        ttk.Button(actions, text="Générer", command=self.generate).pack(side="right")
+        self.progress_text = tk.StringVar()
+        ttk.Label(actions, textvariable=self.progress_text).pack(side="left")
+
+        self.generate_button = ttk.Button(actions, text="Générer", command=self.generate)
+        self.generate_button.pack(side="right")
         ttk.Button(actions, text="Fermer", command=self.master.destroy).pack(side="right", padx=(0, 8))
 
     def _load_original_values(self):
@@ -197,24 +203,58 @@ class SettingsEditor:
             variable.set(filename)
 
     def generate(self):
-        for name, var in self.fields.items():
-            value = var.get()
-            if value.isdigit():
-                value = int(value)
-            self.original_values[name] = value
-        if not os.path.exists(self.original_values["GRID_FILE"]):
-            messagebox.showerror("Erreur", "Le fichier de grille n'existe pas.")
-            return
-        with open("settings.json", "w") as f:
-            json.dump(self.original_values, f, indent=4)
+        if self.generating:
+            self.stop_requested = True
+            self.generating = False
+            self.generate_button.configure(text="Générer")
+            self.progress_text.set("Arrêt de la génération ...")
+        else:
+            self.stop_requested = False
+            self.generating = True
+            for name, var in self.fields.items():
+                value = var.get()
+                if value.isdigit():
+                    value = int(value)
+                self.original_values[name] = value
 
+            with open("settings.json", "w") as f:
+                json.dump(self.original_values, f, indent=4)
+
+            # change text of generate button to "Arrêter"
+            self.generate_button.configure(text="Arrêter")
+
+            self.progress_text.set("Démarrage de la génération ...")
+            threading.Thread(target=self._run_generation, daemon=True).start()
+
+    def _run_generation(self):
         try:
-            algorithme.generate()
+            if not os.path.exists(self.original_values["GRID_FILE"]):
+                import create_grid
+
+            algorithme.generate(self)
+        except Exception as error:
+            self.master.after(0, self._generation_finished, error)
+        else:
+            self.master.after(0, self._generation_finished, None)
+
+    def _generation_finished(self, error):
+        self.generate_button.configure(text="Générer")
+        self.progress_text.set("")
+        if error is None:
             messagebox.showinfo("Succès", "L'algorithme a été exécuté avec succès.")
-        except Exception as e:
-            messagebox.showerror("Erreur", f"Une erreur s'est produite lors de l'exécution de l'algorithme:\n{e}")
+        else:
+            messagebox.showerror(
+                "Erreur",
+                f"Une erreur s'est produite lors de l'exécution de l'algorithme:\n{error}",
+            )
 
-
+    def update_progress(self, current_try):
+        self.master.after(
+            0,
+            self.progress_text.set,
+            f"Génération... Essai {current_try}",
+        )
+        
 if __name__ == "__main__":
     root = tk.Tk()
     SettingsEditor(root)

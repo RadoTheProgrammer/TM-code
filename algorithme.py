@@ -285,13 +285,18 @@ def generate_single():
         print(len(df_grid))
         print(len(df_decision_data))
 
-def generate():
+def generate(interface_object=None):
     global i_try
     try:
         max_l2 = 0
-        for _ in range(settings_data["N_TRIES"]):
+        while True:
             l2 = generate_single()
             i_try += 1
+            if interface_object is not None:
+                interface_object.update_progress(i_try)
+                if interface_object.stop_requested:
+                    print("Arrêt demandé par l'utilisateur.")
+                    break
     finally:
         df_results = pd.DataFrame(results)
         df_results.to_csv(settings_data["OUTPUT_FILE"],index=False)
