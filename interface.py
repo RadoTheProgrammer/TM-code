@@ -61,8 +61,11 @@ class SettingsEditor:
 
         self.generate_button = ttk.Button(actions, text="Générer", command=self.generate)
         self.generate_button.pack(side="right")
-        ttk.Button(actions, text="Fermer", command=self.master.destroy).pack(side="right", padx=(0, 8))
+        ttk.Button(actions, text="Fermer", command=self.close).pack(side="right", padx=(0, 8))
 
+    def close(self):
+        self.stop_generating()
+        self.master.destroy()
     def _load_original_values(self):
         with open("settings.json", "r") as f:
             self.original_values = json.load(f)
@@ -71,7 +74,10 @@ class SettingsEditor:
         if name.endswith("_FILE") or name.endswith("_DIR"):
             return True
         return False
-
+    def stop_generating(self):
+        self.stop_requested = True
+        while self.stop_requested:
+            self.master.update()
     def _build_form(self):
         for name in ("TM_FILE", "OUTPUT_DIR", "OUTPUT_FILE", "ELEVES_FILE"):
             value = self.original_values[name]
@@ -204,10 +210,11 @@ class SettingsEditor:
 
     def generate(self):
         if self.generating:
-            self.stop_requested = True
+            self.progress_text.set("Arrêt de la génération ...")
+            self.stop_generating()
             self.generating = False
             self.generate_button.configure(text="Générer")
-            self.progress_text.set("Arrêt de la génération ...")
+            
         else:
             self.stop_requested = False
             self.generating = True
