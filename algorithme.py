@@ -277,7 +277,7 @@ def generate_single():
         results["TMnonouverts"].append(TM_non_ouverts)
         for n_envie in [1,2,3]:
             
-            results[f"NbEnvie{n_envie}"].append((df_decision_data["Choice"]==n_envie).sum())
+            results[f"NbEnvie{n_envie}"].append((df_decision_data["ChoiceWeight"]==n_envie).sum())
         print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:

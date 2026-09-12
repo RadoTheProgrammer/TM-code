@@ -5,7 +5,7 @@ GRID_FILE = f"{DIR}/grid.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 
-RESULT_FILE = f"{DIR}/results/r658.csv"
+RESULT_FILE = f"{DIR}/resultslearned2/r66.csv"
 
 df_grid = pd.read_csv(GRID_FILE,index_col=0)
 df_grid.index = df_grid.index.astype(str)

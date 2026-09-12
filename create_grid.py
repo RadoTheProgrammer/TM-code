@@ -14,12 +14,17 @@ IGI_GROUPE = "groupe"
 IGI_INDIFFERENT = "indifférent"
 
 
+import json
 import os
 import time
 
 import pandas as pd
 import numpy as np
-df = pd.read_csv(f"{DIR}/voeux_eleves.csv",index_col=0,dtype={
+
+with open("settings.json", "r") as f:
+    settings_data = json.load(f)
+    
+df = pd.read_csv(settings_data["ELEVES_FILE"],index_col=0,dtype={
     "Elève":str,
     "Choix 1 en duo avec Nom Prénom (si case cochée précédemment)":str,
     "Choix 2 en duo avec Nom Prénom (si case cochée précédemment)":str,
@@ -115,6 +120,6 @@ for _,duo in df_duo.iterrows():
 
 df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
 df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
-df_duo.to_csv(f"{DIR}/duo.csv",index=False)
+df_duo.to_csv(settings_data["DUO_FILE"],index=False)
 
-df_grid.to_csv(f"{DIR}/grid.csv")
+df_grid.to_csv(settings_data["GRID_FILE"])
