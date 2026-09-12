@@ -54,19 +54,9 @@ else:
     i_try = 0
     os.mkdir(settings_data["OUTPUT_DIR"])
 if os.path.exists(settings_data["OUTPUT_FILE"]):
-    results = pd.read_csv(settings_data["OUTPUT_FILE"]).to_dict(orient="list")
+    results = pd.read_csv(settings_data["OUTPUT_FILE"])
 else:
-    results = {col: [] for col in [
-        "Id", 
-        "Mean", 
-        "Std", 
-        "TMnonouverts", 
-        "NbEnvie1", 
-        "NbEnvie2", 
-        "NbEnvie3", 
-        "Problems_nonattribue",
-        "Problems_pasassez",
-        "Problems_tropnombreux"]}
+    results = None
 
 def numpy_sample(population, weights, k, random_state):
     """
@@ -132,6 +122,12 @@ def generate_single():
         #     selected = default_df
         return candidats.loc[selected_index]
     i = 0
+
+    # indexes = []
+    # for eleve in df_grid.index:
+    #     indexes.append(f"{eleve}_TM")
+    #     indexes.append(f"{eleve}_Envie")
+    data = pd.Series()
     for i_tm,tm in shuffle_tm().iterrows():
 
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
@@ -248,36 +244,34 @@ def generate_single():
                 if (nom_eleve=="33") and (i_tm==7):
                     pass
                 if is_selected:
-                    choice_weight = candidats.at[nom_eleve,str(i_tm)]
-                    decision_data["Id"].append(nom_eleve)
-                    decision_data["Choice"].append(i_tm)
-                    decision_data["ChoiceWeight"].append(choice_weight)
+                    envie = candidats.at[nom_eleve,str(i_tm)]
+                    data[f"{nom_eleve}_TM"] = i_tm
+                    data[f"{nom_eleve}_Envie"] = envie
+
                     df_grid.loc[nom_eleve] = np.nan # type: ignore
-                    df_grid.at[nom_eleve,str(i_tm)] = choice_weight
+                    df_grid.at[nom_eleve,str(i_tm)] = envie
                 else:
                     df_grid.at[nom_eleve,str(i_tm)] = np.nan
         i += 1
     # Construire le DataFrame des décisions à partir des choix collectés.
-    df_decision_data = pd.DataFrame(decision_data)
-    for nom_eleve in df_grid.index:
-        if nom_eleve not in decision_data["Id"]:
-            print(f"Nom eleve: {nom_eleve}")
 
-    if len(df_grid)==len(df_decision_data):
+    if True:
         # Affectation réussie : enregistrer les résultats et mettre à jour les métriques.
-        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{i_try}.csv",index=False)
-        mean = df_decision_data["ChoiceWeight"].mean()
-        std = df_decision_data["ChoiceWeight"].std()
-        results["Id"].append(i_try)
-        results["Mean"].append(mean)
-        results["Std"].append(std)
-        results["Problems_nonattribue"].append(len(problems["nonattribue"]))
-        results["Problems_pasassez"].append(len(problems["pasassez"]))
-        results["Problems_tropnombreux"].append(len(problems["tropnombreux"]))
-        results["TMnonouverts"].append(TM_non_ouverts)
+        data_envie = data.filter(like="_Envie")
+        mean = data_envie.mean()
+        std = data_envie.std()
+        data = data.sort_index()
+        data["Idx"] = i_try
+        data["Mean"] = mean
+        data["Std"] = std
+        data["Problems_nonattribue"] = len(problems["nonattribue"])
+        data["Problems_pasassez"] = len(problems["pasassez"])
+        data["Problems_tropnombreux"] = len(problems["tropnombreux"])
+        data["TMnonouverts"] = TM_non_ouverts
+
         for n_envie in [1,2,3]:
             
-            results[f"NbEnvie{n_envie}"].append((df_decision_data["ChoiceWeight"]==n_envie).sum())
+            data[f"NbEnvie{n_envie}"] = (data[f"{n_envie}_Envie"]==n_envie).sum()
         print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
@@ -285,12 +279,18 @@ def generate_single():
         print(len(df_grid))
         print(len(df_decision_data))
 
+    return data
 def generate(interface_object=None):
-    global i_try
+    global i_try,results
     try:
         max_l2 = 0
         while True:
-            l2 = generate_single()
+            data = generate_single()
+            data_framed = data.to_frame().T
+            if results is None:
+                results = data_framed
+            else:
+                results = pd.concat([results, data.to_frame().T], ignore_index=True)
             i_try += 1
             if interface_object is not None:
                 interface_object.update_progress(i_try)
@@ -298,10 +298,12 @@ def generate(interface_object=None):
                     print("Arrêt demandé par l'utilisateur.")
                     break
     finally:
-        df_results = pd.DataFrame(results)
-        df_results.to_csv(settings_data["OUTPUT_FILE"],index=False)
+        if results is not None:
+            results.to_csv(settings_data["OUTPUT_FILE"],index=False)
         nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
         nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
-
+        print("Résultats sauvegardés dans les fichiers de sortie.")
+        if interface_object is not None:
+            interface_object.stop_requested = False
 if __name__ == "__main__":
     generate()
