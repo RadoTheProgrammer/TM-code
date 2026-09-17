@@ -73,7 +73,7 @@ def numpy_sample(population, weights, k, random_state):
     """
     return np.random.choice(population, size=k, replace=False, p=weights/np.sum(weights))
 def generate_single():
-    global max_l2,best_mean,best_std
+    global max_l2,best_mean,best_std,data
     
     """Génère une tentative d'attribution pour tous les TMs.
 
@@ -127,7 +127,7 @@ def generate_single():
     # for eleve in df_grid.index:
     #     indexes.append(f"{eleve}_TM")
     #     indexes.append(f"{eleve}_Envie")
-    data = pd.Series()
+    
     for i_tm,tm in shuffle_tm().iterrows():
 
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
@@ -271,7 +271,7 @@ def generate_single():
 
         for n_envie in [1,2,3]:
             
-            data[f"NbEnvie{n_envie}"] = (data[f"{n_envie}_Envie"]==n_envie).sum()
+            data[f"NbEnvie{n_envie}"] = (data_envie==n_envie).sum()
         print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
@@ -281,9 +281,10 @@ def generate_single():
 
     return data
 def generate(interface_object=None):
-    global i_try,results
+    global i_try,results,data
     try:
         max_l2 = 0
+        data = pd.Series()
         while True:
             data = generate_single()
             data_framed = data.to_frame().T
