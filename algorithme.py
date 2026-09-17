@@ -58,6 +58,10 @@ if os.path.exists(settings_data["OUTPUT_FILE"]):
 else:
     results = None
 
+data = {}
+data_envie = {}
+data_tm = {}
+    
 def numpy_sample(population, weights, k, random_state):
     """
     Échantillonne k éléments de la population en utilisant les poids donnés.
@@ -73,7 +77,7 @@ def numpy_sample(population, weights, k, random_state):
     """
     return np.random.choice(population, size=k, replace=False, p=weights/np.sum(weights))
 def generate_single():
-    global max_l2,best_mean,best_std,data
+    global max_l2,best_mean,best_std,data,data_envie,data_tm
     
     """Génère une tentative d'attribution pour tous les TMs.
 
@@ -245,8 +249,8 @@ def generate_single():
                     pass
                 if is_selected:
                     envie = candidats.at[nom_eleve,str(i_tm)]
-                    data[f"{nom_eleve}_TM"] = i_tm
-                    data[f"{nom_eleve}_Envie"] = envie
+                    data_tm[f"{nom_eleve}_TM"] = i_tm
+                    data_envie[nom_eleve] = envie
 
                     df_grid.loc[nom_eleve] = np.nan # type: ignore
                     df_grid.at[nom_eleve,str(i_tm)] = envie
@@ -257,10 +261,12 @@ def generate_single():
 
     if True:
         # Affectation réussie : enregistrer les résultats et mettre à jour les métriques.
-        data_envie = data.filter(like="_Envie")
-        mean = data_envie.mean()
-        std = data_envie.std()
-        data = data.sort_index()
+        pass
+        data_envie_s = pd.Series(data_envie)
+        s = data_envie_s.sum()
+        mean = data_envie_s.mean()
+        std = data_envie_s.std()
+
         data["Idx"] = i_try
         data["Mean"] = mean
         data["Std"] = std
@@ -271,7 +277,7 @@ def generate_single():
 
         for n_envie in [1,2,3]:
             
-            data[f"NbEnvie{n_envie}"] = (data_envie==n_envie).sum()
+            data[f"NbEnvie{n_envie}"] = (data_envie_s==n_envie).sum()
         print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
@@ -279,19 +285,19 @@ def generate_single():
         print(len(df_grid))
         print(len(df_decision_data))
 
-    return data
+    return pd.concat([pd.Series(data),data_envie_s,pd.Series(data_tm)])
 def generate(interface_object=None):
     global i_try,results,data
     try:
         max_l2 = 0
-        data = pd.Series()
+
         while True:
-            data = generate_single()
-            data_framed = data.to_frame().T
+            data_single = generate_single()
+            data_framed =  data_single.to_frame().T
             if results is None:
                 results = data_framed
             else:
-                results = pd.concat([results, data.to_frame().T], ignore_index=True)
+                results = pd.concat([results, data_framed], ignore_index=True)
             i_try += 1
             if interface_object is not None:
                 interface_object.update_progress(i_try)
