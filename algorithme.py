@@ -16,6 +16,7 @@ with open("settings.json", "r") as f:
 # ============================================================================
 # Initialisation des données
 # ============================================================================
+data = {}
 rng = np.random.default_rng(settings_data["RANDOM_SEED"])  # Générateur aléatoire
 np.random.seed(settings_data["RANDOM_SEED"])
 df_grid_orig = pd.read_csv(settings_data["GRID_FILE"], index_col=0)  # Charger la grille originale
@@ -82,6 +83,8 @@ def numpy_sample(population, weights, k, random_state):
         list: Liste des éléments échantillonnés.
     """
     return np.random.choice(population, size=k, replace=False, p=weights/np.sum(weights))
+
+
 def generate_single():
     global max_l2,best_mean,best_std
     
@@ -268,40 +271,44 @@ def generate_single():
         df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{i_try}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
         std = df_decision_data["ChoiceWeight"].std()
-        results["Id"].append(i_try)
-        results["Mean"].append(mean)
-        results["Std"].append(std)
-        results["Problems_nonattribue"].append(len(problems["nonattribue"]))
-        results["Problems_pasassez"].append(len(problems["pasassez"]))
-        results["Problems_tropnombreux"].append(len(problems["tropnombreux"]))
-        results["TMnonouverts"].append(TM_non_ouverts)
+        data["Id"]=(i_try)
+        data["Mean"]=(mean)
+        data["Std"]=(std)
+        data["Problems_nonattribue"]=(len(problems["nonattribue"]))
+        data["Problems_pasassez"]=(len(problems["pasassez"]))
+        data["Problems_tropnombreux"]=(len(problems["tropnombreux"]))
+        data["TMnonouverts"]=(TM_non_ouverts)
         for n_envie in [1,2,3]:
             
-            results[f"NbEnvie{n_envie}"].append((df_decision_data["ChoiceWeight"]==n_envie).sum())
-        print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
+            data[f"NbEnvie{n_envie}"] = (df_decision_data["ChoiceWeight"]==n_envie).sum()
+        #print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
         # Si l'affectation est incomplète, afficher les diagnostics.
         print(len(df_grid))
         print(len(df_decision_data))
 
+    return pd.Series(data)
 def generate(interface_object=None):
-    global i_try
-    try:
-        max_l2 = 0
-        while True:
-            l2 = generate_single()
-            i_try += 1
-            if interface_object is not None:
-                interface_object.update_progress(i_try)
-                if interface_object.stop_requested:
-                    print("Arrêt demandé par l'utilisateur.")
-                    break
-    finally:
-        df_results = pd.DataFrame(results)
-        df_results.to_csv(settings_data["OUTPUT_FILE"],index=False)
+    global results
+    i_try = 0
+    while True:
+        data_single = generate_single()
+        data_framed =  data_single.to_frame().T
+        if results is None:
+            results = data_framed
+        else:
+            results = pd.concat([results, data_framed], ignore_index=True)
+        i_try += 1
+        results.to_csv(settings_data["OUTPUT_FILE"],index=False)
         nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
         nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
-
+        if interface_object is not None:
+            interface_object.update_progress(data_single)
+            if interface_object.stop_requested:
+                print("Arrêt demandé par l'utilisateur.")
+                interface_object.stop_requested=False
+                break
+            
 if __name__ == "__main__":
     generate()
