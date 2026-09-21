@@ -278,7 +278,7 @@ def generate_single():
         for n_envie in [1,2,3]:
             
             data[f"NbEnvie{n_envie}"] = (data_envie_s==n_envie).sum()
-        print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
+        #print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
         # Si l'affectation est incomplète, afficher les diagnostics.
@@ -287,30 +287,25 @@ def generate_single():
 
     return pd.concat([pd.Series(data),data_envie_s,pd.Series(data_tm)])
 def generate(interface_object=None):
-    global i_try,results,data
-    try:
-        max_l2 = 0
-
-        while True:
-            data_single = generate_single()
-            data_framed =  data_single.to_frame().T
-            if results is None:
-                results = data_framed
-            else:
-                results = pd.concat([results, data_framed], ignore_index=True)
-            i_try += 1
-            if interface_object is not None:
-                interface_object.update_progress(i_try)
-                if interface_object.stop_requested:
-                    print("Arrêt demandé par l'utilisateur.")
-                    break
-    finally:
-        if results is not None:
-            results.to_csv(settings_data["OUTPUT_FILE"],index=False)
+    global results
+    i_try = 0
+    while True:
+        data_single = generate_single()
+        data_framed =  data_single.to_frame().T
+        if results is None:
+            results = data_framed
+        else:
+            results = pd.concat([results, data_framed], ignore_index=True)
+        i_try += 1
+        results.to_csv(settings_data["OUTPUT_FILE"],index=False)
         nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
         nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
-        print("Résultats sauvegardés dans les fichiers de sortie.")
         if interface_object is not None:
-            interface_object.stop_requested = False
+            interface_object.update_progress(data_single)
+            if interface_object.stop_requested:
+                print("Arrêt demandé par l'utilisateur.")
+                interface_object.stop_requested=False
+                break
+            
 if __name__ == "__main__":
     generate()
