@@ -267,7 +267,6 @@ def generate_single():
         mean = data_envie_s.mean()
         std = data_envie_s.std()
 
-        data["Idx"] = i_try
         data["Mean"] = mean
         data["Std"] = std
         data["Problems_nonattribue"] = len(problems["nonattribue"])

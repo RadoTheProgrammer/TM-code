@@ -107,9 +107,13 @@ class SettingsEditor:
 
         self.results_frame = ttk.LabelFrame(self.form_frame, text="Résultats")
         self.results_frame.pack(fill="both", expand=True, pady=(12, 0))
+        self.results_frame.rowconfigure(0, weight=1)
+        self.results_frame.columnconfigure(0, weight=1)
 
         table_frame = ttk.Frame(self.results_frame)
         table_frame.pack(fill="both", expand=True, padx=6, pady=6)
+        table_frame.rowconfigure(0, weight=1)
+        table_frame.columnconfigure(0, weight=1)
 
         output_file = self.fields.get("OUTPUT_FILE")
         output_path = output_file.get() if output_file else self.original_values.get("OUTPUT_FILE", "")
@@ -132,6 +136,7 @@ class SettingsEditor:
             ttk.Label(table_frame, text="Le fichier de résultats est vide.").pack(anchor="w")
             return
 
+        columns = ["Index", *columns]
         tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         vertical_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
         horizontal_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=tree.xview)
@@ -150,8 +155,12 @@ class SettingsEditor:
             )
             tree.column(column, width=max(100, len(column) * 10), anchor="w")
 
-        for row in rows:
-            tree.insert("", "end", values=[row.get(column, "") for column in columns])
+        for index, row in enumerate(rows, start=1):
+            tree.insert(
+                "",
+                "end",
+                values=[index, *[row.get(column, "") for column in columns[1:]]],
+            )
 
         # Put the results table in the upper-left cell of the layout.  ``nsew``
         # makes the tree expand in every direction when the window is resized.
@@ -164,11 +173,6 @@ class SettingsEditor:
         # available width.  It occupies row 1, while the tree occupies row 0.
         horizontal_scrollbar.grid(row=1, column=0, sticky="ew")
 
-        # Give the tree's row and column the extra space available in
-        # ``table_frame``.  Without these weights, the tree would keep its
-        # requested size instead of growing with the results frame.
-        # table_frame.rowconfigure(0, weight=1)
-        # table_frame.columnconfigure(0, weight=1)
         self.results_tree = tree
 
     @staticmethod
@@ -255,10 +259,11 @@ class SettingsEditor:
                 return
 
             columns = tree["columns"]
+            index = len(tree.get_children()) + 1
             tree.insert(
                 "",
                 "end",
-                values=[data_single.get(column, "") for column in columns],
+                values=[index, *[data_single.get(column, "") for column in columns[1:]]],
             )
 
         # Generation runs in a worker thread; Tkinter widgets must be updated
