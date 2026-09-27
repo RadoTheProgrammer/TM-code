@@ -55,19 +55,9 @@ else:
     i_try = 0
     os.mkdir(settings_data["OUTPUT_DIR"])
 if os.path.exists(settings_data["OUTPUT_FILE"]):
-    results = pd.read_csv(settings_data["OUTPUT_FILE"]).to_dict(orient="list")
+    results = pd.read_csv(settings_data["OUTPUT_FILE"])
 else:
-    results = {col: [] for col in [
-        "Id", 
-        "Mean", 
-        "Std", 
-        "TMnonouverts", 
-        "NbEnvie1", 
-        "NbEnvie2", 
-        "NbEnvie3", 
-        "Problems_nonattribue",
-        "Problems_pasassez",
-        "Problems_tropnombreux"]}
+    results = None
 
 def numpy_sample(population, weights, k, random_state):
     """
