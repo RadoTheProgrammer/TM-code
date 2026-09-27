@@ -270,6 +270,7 @@ class SettingsEditor:
 
         # Generation runs in a worker thread; Tkinter widgets must be updated
         # from the main thread.
+        print("HELLO WORLD")
         self.master.after(0, insert_row)
         
 if __name__ == "__main__":
