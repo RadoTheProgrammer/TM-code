@@ -158,15 +158,7 @@ class SettingsEditor:
             xscrollcommand=horizontal_scrollbar.set,
         )
 
-        for column in columns:
-            tree.heading(
-                column,
-                text=column,
-                command=lambda selected_column=column: self._sort_results(
-                    tree, selected_column, False
-                ),
-            )
-            tree.column(column, width=max(100, len(column) * 10), anchor="w")
+        self._configure_sortable_tree(tree, columns)
 
         for index, row in enumerate(rows):
             tree.insert(
@@ -187,6 +179,77 @@ class SettingsEditor:
         horizontal_scrollbar.grid(row=1, column=0, sticky="ew")
 
         self.results_tree = tree
+        tree.bind("<Double-1>", self.show_result_details)
+
+    def show_result_details(self, event):
+        tree = event.widget
+        item = tree.identify_row(event.y)
+        if not item:
+            return
+
+        index = tree.set(item, "Index")
+        details_path = os.path.join(
+            self.fields["OUTPUT_DIR"].get(),
+            f"r{index}.csv",
+        )
+
+        try:
+            with open(details_path, "r", newline="", encoding="utf-8-sig") as file:
+                reader = csv.DictReader(file)
+                columns = list(reader.fieldnames or [])
+                rows = list(reader)
+        except (OSError, csv.Error) as error:
+            messagebox.showerror(
+                "Détails indisponibles",
+                f"Impossible de lire le fichier de détails : {error}",
+                parent=self.master,
+            )
+            return
+
+        details_window = tk.Toplevel(self.master)
+        details_window.title(f"Détails de la répartition {index}")
+        details_window.geometry("700x450")
+        details_window.minsize(500, 300)
+
+        if not columns:
+            ttk.Label(details_window, text="Le fichier de détails est vide.").pack(
+                anchor="w", padx=12, pady=12
+            )
+            return
+
+        details_tree = ttk.Treeview(details_window, columns=columns, show="headings")
+        vertical_scrollbar = ttk.Scrollbar(
+            details_window, orient="vertical", command=details_tree.yview
+        )
+        horizontal_scrollbar = ttk.Scrollbar(
+            details_window, orient="horizontal", command=details_tree.xview
+        )
+        details_tree.configure(
+            yscrollcommand=vertical_scrollbar.set,
+            xscrollcommand=horizontal_scrollbar.set,
+        )
+
+        self._configure_sortable_tree(details_tree, columns)
+
+        for row in rows:
+            details_tree.insert("", "end", values=[row.get(column, "") for column in columns])
+
+        details_window.rowconfigure(0, weight=1)
+        details_window.columnconfigure(0, weight=1)
+        details_tree.grid(row=0, column=0, sticky="nsew")
+        vertical_scrollbar.grid(row=0, column=1, sticky="ns")
+        horizontal_scrollbar.grid(row=1, column=0, sticky="ew")
+
+    def _configure_sortable_tree(self, tree, columns):
+        for column in columns:
+            tree.heading(
+                column,
+                text=column,
+                command=lambda selected_column=column: self._sort_results(
+                    tree, selected_column, False
+                ),
+            )
+            tree.column(column, width=max(100, len(column) * 10), anchor="w")
 
     @staticmethod
     def _sort_results(tree, column, reverse):
@@ -273,7 +336,7 @@ class SettingsEditor:
                 return
 
             columns = tree["columns"]
-            index = len(tree.get_children()) + 1
+            index = len(tree.get_children())
             tree.insert(
                 "",
                 "end",
