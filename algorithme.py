@@ -258,10 +258,9 @@ def generate_single():
 
     if len(df_grid)==len(df_decision_data):
         # Affectation réussie : enregistrer les résultats et mettre à jour les métriques.
-        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{i_try}.csv",index=False)
+        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{0 if results is None else len(results)}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
         std = df_decision_data["ChoiceWeight"].std()
-        data["Id"]=(i_try)
         data["Mean"]=(mean)
         data["Std"]=(std)
         data["Problems_nonattribue"]=(len(problems["nonattribue"]))

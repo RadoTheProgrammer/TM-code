@@ -116,6 +116,13 @@ class SettingsEditor:
         self.results_frame.rowconfigure(0, weight=1)
         self.results_frame.columnconfigure(0, weight=1)
 
+        self.auto_scroll = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            self.results_frame,
+            text="Défilement automatique vers le bas",
+            variable=self.auto_scroll,
+        ).pack(anchor="w", padx=6, pady=(6, 0))
+
         table_frame = ttk.Frame(self.results_frame)
         table_frame.pack(fill="both", expand=True, padx=6, pady=6)
         table_frame.rowconfigure(0, weight=1)
@@ -161,7 +168,7 @@ class SettingsEditor:
             )
             tree.column(column, width=max(100, len(column) * 10), anchor="w")
 
-        for index, row in enumerate(rows, start=1):
+        for index, row in enumerate(rows):
             tree.insert(
                 "",
                 "end",
@@ -272,6 +279,8 @@ class SettingsEditor:
                 "end",
                 values=[index, *[data_single.get(column, "") for column in columns[1:]]],
             )
+            if self.auto_scroll.get():
+                tree.yview_moveto(1.0)
 
         # Generation runs in a worker thread; Tkinter widgets must be updated
         # from the main thread.
