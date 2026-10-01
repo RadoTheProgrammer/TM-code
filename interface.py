@@ -67,8 +67,22 @@ class SettingsEditor:
         self.stop_generating()
         self.master.destroy()
     def _load_original_values(self):
-        with open("settings.json", "r") as f:
-            self.original_values = json.load(f)
+        try:
+            with open("settings.json", "r") as f:
+                self.original_values = json.load(f)
+        except FileNotFoundError:
+            self.original_values = {
+    "GRID_FILE": "grid.csv",
+    "OUTPUT_DIR": "results",
+    "OUTPUT_FILE": "results/o.csv",
+    "TM_FILE": "",
+    "DUO_FILE": "duo.csv",
+    "NPROBLEMS_ELEVES_FILE": "nproblems_eleves.csv",
+    "NPROBLEMS_TM_FILE": "nproblems_tm_df.csv",
+    "ELEVES_FILE": "",
+    "N_TRIES": 10000,
+    "RANDOM_SEED": 67
+}
 
     def _is_file_setting(self, name, value):
         if name.endswith("_FILE") or name.endswith("_DIR"):

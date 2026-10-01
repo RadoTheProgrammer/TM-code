@@ -23,14 +23,20 @@ import numpy as np
 
 with open("settings.json", "r") as f:
     settings_data = json.load(f)
-    
-df = pd.read_csv(settings_data["ELEVES_FILE"],index_col=0,dtype={
+def func_read_csv_excel(file):
+    if file.endswith(".csv"):
+        return pd.read_csv
+    elif file.endswith(".xlsx"):
+        return pd.read_excel
+    else:
+        raise ValueError(f"Unsupported file format: {file}")
+df = func_read_csv_excel(settings_data["ELEVES_FILE"])(settings_data["ELEVES_FILE"],index_col=0,dtype={
     "Elève":str,
     "Choix 1 en duo avec Nom Prénom (si case cochée précédemment)":str,
     "Choix 2 en duo avec Nom Prénom (si case cochée précédemment)":str,
     "Choix 3 en duo avec Nom Prénom (si case cochée précédemment)":str})
 
-df_tm = pd.read_csv(TM_FILE,index_col=0)
+df_tm = func_read_csv_excel(settings_data["TM_FILE"])(settings_data["TM_FILE"],index_col=0)
 
 n_tm = len(df_tm)
 tm_libre = df_tm[df_tm["Langue"]=="Libre"]
