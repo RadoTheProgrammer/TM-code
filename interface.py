@@ -3,7 +3,7 @@ import csv
 import threading
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
-import algorithme
+
 import json
 
 
@@ -325,7 +325,7 @@ class SettingsEditor:
         try:
             if not os.path.exists(self.original_values["GRID_FILE"]):
                 import create_grid
-
+            import algorithme
             algorithme.generate(self)
         except Exception as error:
             self.master.after(0, self._generation_finished, error)
