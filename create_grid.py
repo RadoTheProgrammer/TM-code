@@ -32,15 +32,7 @@ def func_read_csv_excel(file):
         raise ValueError(f"Unsupported file format: {file}")
 
 def verify_tm_file(file):
-    normalized_path = os.path.normpath(file).replace("\\", "/").casefold()
-    if not normalized_path.endswith((
-        "donnees_tms/annee_1/liste_sujets.csv",
-        "donnees_tms/annee_2/liste_sujets.csv",
-    )):
-        raise ValueError(
-            "TM_FILE must point to Donnees_TMs/Annee_1/liste_sujets.csv "
-            "or Donnees_TMs/Annee_2/liste_sujets.csv"
-        )
+
 
     tm_data = func_read_csv_excel(file)(file)
     if tm_data.empty or tm_data.columns[0] != "N° TM":

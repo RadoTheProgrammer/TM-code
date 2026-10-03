@@ -106,10 +106,11 @@ def generate_single():
         return df_tm.loc[numpy_sample(df_tm.index, nproblems_tm.sum(axis=1)+1, len(df_tm), rng)]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
-        print(weights.values)
+        #print(weights.values)
         candidats["weights"] = weights
         candidats2 =candidats.sort_values("weights",ascending=False)
-        selected_index = numpy_sample(candidats.index, weights, max(0, int(maximum-len(forced))), rng)
+
+        return candidats2.head(int(maximum-len(forced)))
         # try:
         #     selected = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         # # selected_unique = selected[~selected.index.duplicated(keep="first")]
