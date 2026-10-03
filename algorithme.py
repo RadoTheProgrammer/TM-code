@@ -106,6 +106,9 @@ def generate_single():
         return df_tm.loc[numpy_sample(df_tm.index, nproblems_tm.sum(axis=1)+1, len(df_tm), rng)]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
+        print(weights.values)
+        candidats["weights"] = weights
+        candidats2 =candidats.sort_values("weights",ascending=False)
         selected_index = numpy_sample(candidats.index, weights, max(0, int(maximum-len(forced))), rng)
         # try:
         #     selected = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
@@ -267,7 +270,7 @@ def generate_single():
         data["Problems_pasassez"]=(len(problems["pasassez"]))
         data["Problems_tropnombreux"]=(len(problems["tropnombreux"]))
         data["TMnonouverts"]=(TM_non_ouverts)
-        for n_envie in [1,2,3]:
+        for n_envie in [1,3,9]:
             
             data[f"NbEnvie{n_envie}"] = (df_decision_data["ChoiceWeight"]==n_envie).sum()
         #print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
