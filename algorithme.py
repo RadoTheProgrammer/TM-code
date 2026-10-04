@@ -10,9 +10,8 @@ import pandas as pd
 import shutil
 import numpy as np
 import json
+from utils import settings_data
 
-with open("settings.json", "r") as f:
-    settings_data = json.load(f)
 # ============================================================================
 # Initialisation des données
 # ============================================================================

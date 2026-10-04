@@ -1,13 +1,13 @@
 {
-    "DIR": "Donnees_TMs/Annee_2",
-    "GRID_FILE": "Donnees_TMs/Annee_2/grid.csv",
-    "OUTPUT_DIR": "Donnees_TMs/Annee_2/results20261003",
-    "OUTPUT_FILE": "Donnees_TMs/Annee_2/results20261003/o.csv",
-    "TM_FILE": "Donnees_TMs/Annee_2/liste_sujets.csv",
-    "DUO_FILE": "Donnees_TMs/Annee_2/duo.csv",
-    "NPROBLEMS_ELEVES_FILE": "Donnees_TMs/Annee_2/nproblems_eleves.csv",
-    "NPROBLEMS_TM_FILE": "Donnees_TMs/Annee_2/nproblems_tm_df.csv",
-    "ELEVES_FILE": "Donnees_TMs/Annee_2/voeux_eleves.csv",
+    "DIR": "C:/Users/rrrad/OneDrive - Education Vaud/Documents/TM/TM-code/Donnees_TMs/Annee_2",
+    "GRID_FILE": "grid.csv",
+    "OUTPUT_DIR": "results",
+    "OUTPUT_FILE": "o.csv",
+    "TM_FILE": "liste_sujets.csv",
+    "DUO_FILE": "duo.csv",
+    "NPROBLEMS_ELEVES_FILE": "nproblems_eleves.csv",
+    "NPROBLEMS_TM_FILE": "nproblems_tm_df.csv",
+    "ELEVES_FILE": "voeux_eleves.csv",
     "N_TRIES": 10000,
     "RANDOM_SEED": 67
 }

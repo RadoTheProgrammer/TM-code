@@ -9,9 +9,8 @@ import json
 
 settings_description = {
     "TM_FILE": "Fichier CSV contenant les travaux de maturité.",
-    "OUTPUT_DIR": "Répertoire où seront enregistrés les résultats.",
-    "OUTPUT_FILE": "Fichier CSV où seront enregistrés les résultats.",
     "ELEVES_FILE": "Fichier CSV contenant les voeux des élèves.",
+    "DIR": "Répertoire de travail pour les fichiers d'entrée et de sortie.",
 }
 
 class SettingsEditor:
@@ -68,10 +67,11 @@ class SettingsEditor:
         self.master.destroy()
     def _load_original_values(self):
         try:
-            with open("settings.json", "r") as f:
+            with open(os.path.expanduser("~/tm-settings.json"), "r") as f:
                 self.original_values = json.load(f)
         except FileNotFoundError:
             self.original_values = {
+    "DIR": "",
     "GRID_FILE": "grid.csv",
     "OUTPUT_DIR": "results",
     "OUTPUT_FILE": "results/o.csv",
@@ -93,7 +93,7 @@ class SettingsEditor:
         while self.stop_requested:
             self.master.update()
     def _build_form(self):
-        for name in ("TM_FILE", "OUTPUT_DIR", "OUTPUT_FILE", "ELEVES_FILE"):
+        for name in ("TM_FILE","ELEVES_FILE","DIR"):
             value = self.original_values[name]
             # row = tk.Frame(
             #     self.form_frame,
@@ -116,11 +116,25 @@ class SettingsEditor:
             entry = ttk.Entry(row, textvariable=var)
             entry.pack(side="left", fill="x", expand=True, padx=(40, 6))
 
-            if self._is_file_setting(name, value):
+            if name in ("TM_FILE", "ELEVES_FILE"):
                 button = ttk.Button(row, text="Parcourir", command=lambda n=name, v=var: self.choose_file(n, v))
+                button.pack(side="left")
+
+            if name=="DIR":
+                # Add a button to open the directory in the file explorer
+                button = ttk.Button(row, text="Parcourir", command=lambda v=var: self.choose_directory(v))
                 button.pack(side="left")
             self.fields[name] = var
 
+    def choose_directory(self, variable):
+        current_value = variable.get()
+        initial_dir = current_value if current_value else os.getcwd()
+        directory = filedialog.askdirectory(
+            title="Sélectionner le répertoire de travail",
+            initialdir=initial_dir,
+        )
+        if directory:
+            variable.set(directory)
     def _build_results_frame(self):
         if hasattr(self, "results_frame"):
             self.results_frame.destroy()
@@ -312,7 +326,7 @@ class SettingsEditor:
                     value = int(value)
                 self.original_values[name] = value
 
-            with open("settings.json", "w") as f:
+            with open(os.path.expanduser("~/tm-settings.json"), "w") as f:
                 json.dump(self.original_values, f, indent=4)
 
             # change text of generate button to "Arrêter"

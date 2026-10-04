@@ -18,12 +18,11 @@ import json
 import os
 import time
 import utils
-
+from utils import settings_data
 import pandas as pd
 import numpy as np
 
-with open("settings.json", "r") as f:
-    settings_data = json.load(f)
+
 
 class DataError(Exception):
     pass
@@ -38,7 +37,7 @@ def verify_tm_file(file):
 
     tm_data = utils.func_read_csv_excel(file)(file)
     if tm_data.empty or tm_data.columns[0] != "N° TM":
-        raise utils.DataError("TM_FILE must have 'N° TM' as its first column")
+        raise utils.DataError("TM_FILE doit avoir 'N° TM' comme première colonne")
     tm_data = tm_data.set_index("N° TM")
     required_columns = {
         "Langue",
@@ -48,65 +47,72 @@ def verify_tm_file(file):
     }
     missing_columns = required_columns - set(tm_data.columns)
     if missing_columns:
-        utils.dataerror(f"TM_FILE is missing columns: {sorted(missing_columns)}")
+        utils.dataerror(f"TM_FILE manque les colonnes : {sorted(missing_columns)}")
     if tm_data.empty:
-        raise utils.DataError("TM_FILE contains no TM rows")
+        raise utils.DataError("TM_FILE ne contient aucune ligne de TM")
 
-    tm_ids = pd.to_numeric(pd.Series(tm_data.index), errors="coerce")
-    if (
-        pd.isna(tm_ids).any()
-        or (tm_ids <= 0).any()
-        or (tm_ids % 1 != 0).any()
-        or tm_data.index.duplicated().any()
-    ):
-        raise utils.DataError("TM_FILE must have unique positive integer TM IDs")
+    tm_ids = pd.Series(pd.to_numeric(pd.Series(tm_data.index), errors="coerce").to_numpy(), index=tm_data.index)
+    invalid_tm_ids = tm_ids.isna() | tm_ids.le(0) | tm_ids.mod(1).ne(0)
+    duplicate_tm_ids = tm_data.index.to_series().duplicated(keep=False)
+    if invalid_tm_ids.any() or duplicate_tm_ids.any():
+        bad_ids = tm_data.index[invalid_tm_ids | duplicate_tm_ids].tolist()
+        raise utils.DataError(f"TM_FILE doit avoir des identifiants TM entiers positifs uniques; identifiants invalides ou dupliqués : {bad_ids}")
 
     allowed_languages = {"français", "allemand", "anglais", "espagnol", "italien", "libre"}
     abbreviations = {"f":"français", "fr":"français", "fra":"français", "ang":"anglais", "all":"allemand", "esp":"espagnol", "it":"italien"}
-    invalid_languages = set()
-    for value in tm_data["Langue"].dropna():
-        languages = {language.strip().casefold() for language in str(value).split("/")}
+    invalid_languages = []
+    for tm_id, value in tm_data["Langue"].items():
+        if pd.isna(value):
+            invalid_languages.append((tm_id, value))
+            continue
+        original_value = str(value).strip()
+        languages = {language.strip().casefold() for language in original_value.split("/")}
         languages = {abbreviations.get(language, language) for language in languages}
-        tm_data.at[value.name, "Langue"] = "/".join(sorted(languages))
+        tm_data.at[tm_id, "Langue"] = "/".join(sorted(languages))
         if not languages <= allowed_languages:
-            invalid_languages.add(str(value))
-    if tm_data["Langue"].isna().any() or invalid_languages:
-        utils.datawarning(f"TM_FILE contains invalid languages: {sorted(invalid_languages)}")
+            invalid_languages.append((tm_id, original_value))
+    if invalid_languages:
+        utils.datawarning(f"TM_FILE contains invalid languages (TM ID, value): {invalid_languages}")
 
     free_tm = tm_data["Langue"].astype(str).str.strip().str.casefold().eq("libre")
     allowed_igi = {IGI_INDIVIDUEL, IGI_GROUPE, IGI_INDIFFERENT}
-    invalid_igi = {
-        str(value)
-        for value in tm_data[COLUMN_IGI].dropna()
-        if str(value).strip().casefold() not in allowed_igi
-    }
-    if (tm_data[COLUMN_IGI].isna() & ~free_tm).any() or invalid_igi:
-        utils.datawarning(f"TM_FILE contains invalid individual/group values: {sorted(invalid_igi)}")
+    igi = tm_data[COLUMN_IGI].astype("string").str.strip().str.casefold()
+    invalid_igi = (~igi.isin(allowed_igi) & igi.notna()) | (igi.isna() & ~free_tm)
+    if invalid_igi.any():
+        utils.datawarning(
+            "TM_FILE contains invalid individual/group values:\n"
+            + tm_data.loc[invalid_igi, [COLUMN_IGI, "Langue"]].to_string()
+        )
 
     maximum = pd.to_numeric(tm_data["Nombre maximal travaux"], errors="coerce")
-    maximum_values = maximum[maximum.notna()]
-    if (
-        (maximum.isna() & ~free_tm).any()
-        or not np.isfinite(maximum_values).all()
-        or (maximum_values <= 0).any()
-        or (maximum_values % 1 != 0).any()
-    ):
-        raise utils.DataError("TM_FILE maximum capacities must be positive whole numbers")
+    invalid_maximum = (
+        maximum.isna()
+        | ~np.isfinite(maximum)
+        | maximum.le(0)
+        | maximum.mod(1).ne(0)
+    ) & ~free_tm
+    if invalid_maximum.any():
+        raise utils.DataError(
+            "Les capacités maximales du TM_FILE doivent être des nombres entiers positifs; lignes invalides:\n"
+            + tm_data.loc[invalid_maximum, ["Nombre maximal travaux"]].to_string()
+        )
 
     minimum_raw = tm_data["Nombre minimal travaux"].astype("string").str.strip()
     minimum_present = minimum_raw.notna() & minimum_raw.ne("")
     minimum = pd.to_numeric(minimum_raw, errors="coerce")
-    if (minimum_present & minimum.isna()).any():
-        raise ValueError("TM_FILE minimum capacities must be numbers or empty")
-    minimum_values = minimum[minimum_present]
-    if (
-        (minimum_present & maximum.isna()).any()
-        or not np.isfinite(minimum_values).all()
-        or (minimum_values < 0).any()
-        or (minimum_values % 1 != 0).any()
-        or (minimum_values > maximum[minimum_present]).any()
-    ):
-        raise ValueError("TM_FILE minimum capacities must be whole numbers between 0 and the maximum")
+    invalid_minimum = minimum_present & (
+        minimum.isna()
+        | ~np.isfinite(minimum)
+        | minimum.lt(0)
+        | minimum.mod(1).ne(0)
+        | maximum.isna()
+        | minimum.gt(maximum)
+    )
+    if invalid_minimum.any():
+        raise utils.DataError(
+            "Les capacités minimales du TM_FILE doivent être des nombres entiers entre 0 et le maximum; lignes invalides:\n"
+            + tm_data.loc[invalid_minimum, ["Nombre minimal travaux", "Nombre maximal travaux"]].to_string()
+        )
 
     return tm_data
 
@@ -114,7 +120,7 @@ def verify_eleves_file(file, tm_data):
 
     student_data = utils.func_read_csv_excel(file)(file, dtype=str)
     if student_data.empty or student_data.columns[0] != "Elève":
-        raise utils.DataError("ELEVES_FILE must have 'Elève' as its first column")
+        raise utils.DataError("ELEVES_FILE doit avoir 'Elève' comme première colonne")
     student_data = student_data.set_index("Elève")
     required_columns = {
         "Choix 1",
@@ -132,13 +138,17 @@ def verify_eleves_file(file, tm_data):
     }
     missing_columns = required_columns - set(student_data.columns)
     if missing_columns:
-        raise utils.DataError(f"ELEVES_FILE is missing columns: {sorted(missing_columns)}")
+        raise utils.DataError(f"ELEVES_FILE manque les colonnes : {sorted(missing_columns)}")
     if student_data.empty:
-        raise utils.DataError("ELEVES_FILE contains no student rows")
+        raise utils.DataError("ELEVES_FILE ne contient aucune ligne d'élève")
 
     student_ids = student_data.index.to_series().astype("string").str.strip()
-    if student_ids.isna().any() or student_ids.eq("").any() or student_ids.duplicated().any():
-        raise utils.DataError("ELEVES_FILE must have unique, non-empty student IDs")
+    invalid_student_ids = student_ids.isna() | student_ids.eq("") | student_ids.duplicated(keep=False)
+    if invalid_student_ids.any():
+        raise utils.DataError(
+            "ELEVES_FILE doit avoir des identifiants d'élèves uniques et non vides; lignes invalides:\n"
+            + student_data.loc[invalid_student_ids].to_string()
+        )
 
     tm_ids = set(pd.to_numeric(pd.Series(tm_data.index), errors="coerce").astype(int))
     allowed_languages = {"0", "français", "allemand", "anglais", "espagnol", "italien"}
@@ -147,27 +157,52 @@ def verify_eleves_file(file, tm_data):
         choice_ids = choice.str.extract(r"^TM(\d+)$", expand=False)
         invalid_choices = ~choice.eq("0") & choice_ids.isna()
         if invalid_choices.any():
-            raise utils.DataError(f"ELEVES_FILE has invalid values in Choix {number}")
+            raise utils.DataError(
+                f"ELEVES_FILE contient des valeurs invalides dans Choix {number}:\n"
+                + student_data.loc[invalid_choices, [f"Choix {number}"]].to_string()
+            )
         selected_ids = pd.to_numeric(choice_ids, errors="coerce")
         unknown_ids = choice_ids.notna() & ~selected_ids.isin(tm_ids)
         if unknown_ids.any():
-            raise utils.DataError(f"ELEVES_FILE Choix {number} refers to unknown TM IDs")
+            raise utils.DataError(
+                f"ELEVES_FILE Choix {number} fait référence à des identifiants TM inconnus:\n"
+                + student_data.loc[unknown_ids, [f"Choix {number}"]].to_string()
+            )
 
         language = student_data[f"Langue (si choix proposé){suffix}"].fillna("").astype(str).str.strip()
-        if not language.str.casefold().isin(allowed_languages).all():
-            raise utils.DataError(f"ELEVES_FILE has invalid languages for Choix {number}")
+        invalid_language = ~language.str.casefold().isin(allowed_languages)
+        if invalid_language.any():
+            column = f"Langue (si choix proposé){suffix}"
+            raise utils.DataError(
+                f"ELEVES_FILE contient des langues invalides pour Choix {number}:\n"
+                + student_data.loc[invalid_language, [column]].to_string()
+            )
 
         mode = student_data[f"Individuel ou en duo{suffix}"].fillna("").astype(str).str.strip()
         normalized_mode = mode.str.casefold()
-        if not normalized_mode.isin({"0", "individuel", "duo"}).all():
-            raise utils.DataError(f"ELEVES_FILE has invalid individual/group values for Choix {number}")
-        if (choice.eq("0") & normalized_mode.ne("0")).any():
-            raise utils.DataError(f"ELEVES_FILE empty Choix {number} must have mode 0")
+        invalid_mode = ~normalized_mode.isin({"0", "individuel", "duo"})
+        if invalid_mode.any():
+            column = f"Individuel ou en duo{suffix}"
+            raise utils.DataError(
+                f"ELEVES_FILE contient des valeurs invalides de type individuel/groupe pour Choix {number}:\n"
+                + student_data.loc[invalid_mode, [column]].to_string()
+            )
+        empty_choice_mode = choice.eq("0") & normalized_mode.ne("0")
+        if empty_choice_mode.any():
+            column = f"Individuel ou en duo{suffix}"
+            raise utils.DataError(
+                f"Le Choix {number} vide dans ELEVES_FILE doit avoir le mode 0; lignes invalides:\n"
+                + student_data.loc[empty_choice_mode, [f"Choix {number}", column]].to_string()
+            )
 
         partner_column = f"Choix {number} en duo avec Nom Prénom (si case cochée précédemment)"
         partner = student_data[partner_column].fillna("").astype(str).str.strip()
-        if (normalized_mode.eq("duo") & partner.eq("")).any():
-            raise utils.DataError(f"ELEVES_FILE has a Duo without a partner for Choix {number}")
+        missing_partner = normalized_mode.eq("duo") & partner.eq("")
+        if missing_partner.any():
+            raise utils.DataError(
+                f"ELEVES_FILE contient un duo sans partenaire pour Choix {number}:\n"
+                + student_data.loc[missing_partner, [f"Choix {number}", partner_column]].to_string()
+            )
 
     return student_data
 
@@ -175,7 +210,7 @@ df_tm = verify_tm_file(settings_data["TM_FILE"])
 df = verify_eleves_file(settings_data["ELEVES_FILE"], df_tm)
 
 n_tm = len(df_tm)
-tm_libre = df_tm[df_tm["Langue"]=="Libre"]
+tm_libre = df_tm[df_tm["Langue"]=="libre"]
 df.index = df.index.astype(str)
 
 # Vérifier que toutes les valeurs de la colonne IGI sont parmi les valeurs autorisées
@@ -207,7 +242,7 @@ for nom_eleve,eleve in df.iterrows():
             n_tm_libre+=1
             continue
         ind_ou_duo = eleve[f"Individuel ou en duo{indice}"]
-        langue = eleve[f"Langue (si choix proposé){indice}"]
+        langue = eleve[f"Langue (si choix proposé){indice}"].strip().casefold()
         langue_tm = df_tm.at[choix,"Langue"]
         if langue!="0" and langue not in langue_tm:
             if choix==35:
