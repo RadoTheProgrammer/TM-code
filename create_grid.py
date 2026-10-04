@@ -17,26 +17,28 @@ IGI_INDIFFERENT = "indifférent"
 import json
 import os
 import time
+import utils
 
 import pandas as pd
 import numpy as np
 
 with open("settings.json", "r") as f:
     settings_data = json.load(f)
-def func_read_csv_excel(file):
-    if file.endswith(".csv"):
-        return pd.read_csv
-    elif file.endswith(".xlsx"):
-        return pd.read_excel
-    else:
-        raise ValueError(f"Unsupported file format: {file}")
 
+class DataError(Exception):
+    pass
+
+def dataerror(message):
+    raise DataError(message)
+
+def datawarning(message):
+    print(f"Warning: {message}")
 def verify_tm_file(file):
 
 
-    tm_data = func_read_csv_excel(file)(file)
+    tm_data = utils.func_read_csv_excel(file)(file)
     if tm_data.empty or tm_data.columns[0] != "N° TM":
-        raise ValueError("TM_FILE must have 'N° TM' as its first column")
+        raise utils.DataError("TM_FILE must have 'N° TM' as its first column")
     tm_data = tm_data.set_index("N° TM")
     required_columns = {
         "Langue",
@@ -46,9 +48,9 @@ def verify_tm_file(file):
     }
     missing_columns = required_columns - set(tm_data.columns)
     if missing_columns:
-        raise ValueError(f"TM_FILE is missing columns: {sorted(missing_columns)}")
+        utils.dataerror(f"TM_FILE is missing columns: {sorted(missing_columns)}")
     if tm_data.empty:
-        raise ValueError("TM_FILE contains no TM rows")
+        raise utils.DataError("TM_FILE contains no TM rows")
 
     tm_ids = pd.to_numeric(pd.Series(tm_data.index), errors="coerce")
     if (
@@ -57,16 +59,19 @@ def verify_tm_file(file):
         or (tm_ids % 1 != 0).any()
         or tm_data.index.duplicated().any()
     ):
-        raise ValueError("TM_FILE must have unique positive integer TM IDs")
+        raise utils.DataError("TM_FILE must have unique positive integer TM IDs")
 
     allowed_languages = {"français", "allemand", "anglais", "espagnol", "italien", "libre"}
+    abbreviations = {"f":"français", "fr":"français", "fra":"français", "ang":"anglais", "all":"allemand", "esp":"espagnol", "it":"italien"}
     invalid_languages = set()
     for value in tm_data["Langue"].dropna():
         languages = {language.strip().casefold() for language in str(value).split("/")}
+        languages = {abbreviations.get(language, language) for language in languages}
+        tm_data.at[value.name, "Langue"] = "/".join(sorted(languages))
         if not languages <= allowed_languages:
             invalid_languages.add(str(value))
     if tm_data["Langue"].isna().any() or invalid_languages:
-        raise ValueError(f"TM_FILE contains invalid languages: {sorted(invalid_languages)}")
+        utils.datawarning(f"TM_FILE contains invalid languages: {sorted(invalid_languages)}")
 
     free_tm = tm_data["Langue"].astype(str).str.strip().str.casefold().eq("libre")
     allowed_igi = {IGI_INDIVIDUEL, IGI_GROUPE, IGI_INDIFFERENT}
@@ -76,7 +81,7 @@ def verify_tm_file(file):
         if str(value).strip().casefold() not in allowed_igi
     }
     if (tm_data[COLUMN_IGI].isna() & ~free_tm).any() or invalid_igi:
-        raise ValueError(f"TM_FILE contains invalid individual/group values: {sorted(invalid_igi)}")
+        utils.datawarning(f"TM_FILE contains invalid individual/group values: {sorted(invalid_igi)}")
 
     maximum = pd.to_numeric(tm_data["Nombre maximal travaux"], errors="coerce")
     maximum_values = maximum[maximum.notna()]
@@ -86,7 +91,7 @@ def verify_tm_file(file):
         or (maximum_values <= 0).any()
         or (maximum_values % 1 != 0).any()
     ):
-        raise ValueError("TM_FILE maximum capacities must be positive whole numbers")
+        raise utils.DataError("TM_FILE maximum capacities must be positive whole numbers")
 
     minimum_raw = tm_data["Nombre minimal travaux"].astype("string").str.strip()
     minimum_present = minimum_raw.notna() & minimum_raw.ne("")
@@ -106,19 +111,10 @@ def verify_tm_file(file):
     return tm_data
 
 def verify_eleves_file(file, tm_data):
-    normalized_path = os.path.normpath(file).replace("\\", "/").casefold()
-    if not normalized_path.endswith((
-        "donnees_tms/annee_1/voeux_eleves.csv",
-        "donnees_tms/annee_2/voeux_eleves.csv",
-    )):
-        raise ValueError(
-            "ELEVES_FILE must point to Donnees_TMs/Annee_1/voeux_eleves.csv "
-            "or Donnees_TMs/Annee_2/voeux_eleves.csv"
-        )
 
-    student_data = func_read_csv_excel(file)(file, dtype=str)
+    student_data = utils.func_read_csv_excel(file)(file, dtype=str)
     if student_data.empty or student_data.columns[0] != "Elève":
-        raise ValueError("ELEVES_FILE must have 'Elève' as its first column")
+        raise utils.DataError("ELEVES_FILE must have 'Elève' as its first column")
     student_data = student_data.set_index("Elève")
     required_columns = {
         "Choix 1",
@@ -136,13 +132,13 @@ def verify_eleves_file(file, tm_data):
     }
     missing_columns = required_columns - set(student_data.columns)
     if missing_columns:
-        raise ValueError(f"ELEVES_FILE is missing columns: {sorted(missing_columns)}")
+        raise utils.DataError(f"ELEVES_FILE is missing columns: {sorted(missing_columns)}")
     if student_data.empty:
-        raise ValueError("ELEVES_FILE contains no student rows")
+        raise utils.DataError("ELEVES_FILE contains no student rows")
 
     student_ids = student_data.index.to_series().astype("string").str.strip()
     if student_ids.isna().any() or student_ids.eq("").any() or student_ids.duplicated().any():
-        raise ValueError("ELEVES_FILE must have unique, non-empty student IDs")
+        raise utils.DataError("ELEVES_FILE must have unique, non-empty student IDs")
 
     tm_ids = set(pd.to_numeric(pd.Series(tm_data.index), errors="coerce").astype(int))
     allowed_languages = {"0", "français", "allemand", "anglais", "espagnol", "italien"}
@@ -151,27 +147,27 @@ def verify_eleves_file(file, tm_data):
         choice_ids = choice.str.extract(r"^TM(\d+)$", expand=False)
         invalid_choices = ~choice.eq("0") & choice_ids.isna()
         if invalid_choices.any():
-            raise ValueError(f"ELEVES_FILE has invalid values in Choix {number}")
+            raise utils.DataError(f"ELEVES_FILE has invalid values in Choix {number}")
         selected_ids = pd.to_numeric(choice_ids, errors="coerce")
         unknown_ids = choice_ids.notna() & ~selected_ids.isin(tm_ids)
         if unknown_ids.any():
-            raise ValueError(f"ELEVES_FILE Choix {number} refers to unknown TM IDs")
+            raise utils.DataError(f"ELEVES_FILE Choix {number} refers to unknown TM IDs")
 
         language = student_data[f"Langue (si choix proposé){suffix}"].fillna("").astype(str).str.strip()
         if not language.str.casefold().isin(allowed_languages).all():
-            raise ValueError(f"ELEVES_FILE has invalid languages for Choix {number}")
+            raise utils.DataError(f"ELEVES_FILE has invalid languages for Choix {number}")
 
         mode = student_data[f"Individuel ou en duo{suffix}"].fillna("").astype(str).str.strip()
         normalized_mode = mode.str.casefold()
         if not normalized_mode.isin({"0", "individuel", "duo"}).all():
-            raise ValueError(f"ELEVES_FILE has invalid individual/group values for Choix {number}")
+            raise utils.DataError(f"ELEVES_FILE has invalid individual/group values for Choix {number}")
         if (choice.eq("0") & normalized_mode.ne("0")).any():
-            raise ValueError(f"ELEVES_FILE empty Choix {number} must have mode 0")
+            raise utils.DataError(f"ELEVES_FILE empty Choix {number} must have mode 0")
 
         partner_column = f"Choix {number} en duo avec Nom Prénom (si case cochée précédemment)"
         partner = student_data[partner_column].fillna("").astype(str).str.strip()
         if (normalized_mode.eq("duo") & partner.eq("")).any():
-            raise ValueError(f"ELEVES_FILE has a Duo without a partner for Choix {number}")
+            raise utils.DataError(f"ELEVES_FILE has a Duo without a partner for Choix {number}")
 
     return student_data
 
