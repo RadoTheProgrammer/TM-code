@@ -102,6 +102,10 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
+        df_tm["weights"] = nproblems_tm.sum(axis=1)+1
+        df_tm_shuffled = df_tm.sort_values("weights",ascending=False)
+        return df_tm_shuffled
+        
         return df_tm.loc[numpy_sample(df_tm.index, nproblems_tm.sum(axis=1)+1, len(df_tm), rng)]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
