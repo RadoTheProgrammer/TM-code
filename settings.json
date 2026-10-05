@@ -5,8 +5,8 @@
     "OUTPUT_FILE": "o.csv",
     "TM_FILE": "liste_sujets.csv",
     "DUO_FILE": "duo.csv",
-    "NPROBLEMS_ELEVES_FILE": "nproblems_eleves.csv",
-    "NPROBLEMS_TM_FILE": "nproblems_tm_df.csv",
+    "NPROBLEMS_ELEVES_FILE": "nproblems_eleves2.csv",
+    "NPROBLEMS_TM_FILE": "nproblems_tm_df2.csv",
     "ELEVES_FILE": "voeux_eleves.csv",
     "N_TRIES": 10000,
     "RANDOM_SEED": 67
