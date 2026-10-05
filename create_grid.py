@@ -76,7 +76,8 @@ def verify_tm_file(file):
 
     free_tm = tm_data["Langue"].astype(str).str.strip().str.casefold().eq("libre")
     allowed_igi = {IGI_INDIVIDUEL, IGI_GROUPE, IGI_INDIFFERENT}
-    igi = tm_data[COLUMN_IGI].astype("string").str.strip().str.casefold()
+    tm_data[COLUMN_IGI] = tm_data[COLUMN_IGI].astype(str).str.strip().str.casefold()
+    igi = tm_data[COLUMN_IGI]
     invalid_igi = (~igi.isin(allowed_igi) & igi.notna()) | (igi.isna() & ~free_tm)
     if invalid_igi.any():
         utils.datawarning(
@@ -169,7 +170,7 @@ def verify_eleves_file(file, tm_data):
                 + student_data.loc[unknown_ids, [f"Choix {number}"]].to_string()
             )
 
-        language = student_data[f"Langue (si choix proposé){suffix}"].fillna("").astype(str).str.strip()
+        language = student_data[f"Langue (si choix proposé){suffix}"].fillna("0").astype(str).str.strip()
         invalid_language = ~language.str.casefold().isin(allowed_languages)
         if invalid_language.any():
             column = f"Langue (si choix proposé){suffix}"
@@ -242,9 +243,9 @@ for nom_eleve,eleve in df.iterrows():
             n_tm_libre+=1
             continue
         ind_ou_duo = eleve[f"Individuel ou en duo{indice}"]
-        langue = eleve[f"Langue (si choix proposé){indice}"].strip().casefold()
+        langue = str(eleve[f"Langue (si choix proposé){indice}"]).strip().casefold()
         langue_tm = df_tm.at[choix,"Langue"]
-        if langue!="0" and langue not in langue_tm:
+        if langue not in ("0","nan") and langue not in langue_tm:
             if choix==35:
                 print(tm_libre.index)
                 pass

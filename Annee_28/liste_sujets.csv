@@ -1,4 +1,4 @@
-﻿N° TM,Titre,Langues,Individuel/groupe/ indifférent,Nombre minimal travaux,Nombre maximal travaux
+﻿N° TM,Titre,Langue,Individuel/groupe/ indifférent,Nombre minimal travaux,Nombre maximal travaux
 1,Sport et Corporalité,Français / Allemand,Indifférent,,6
 2,ReSportage,Français  / Anglais,Groupe,4,6
 3,La fin de l'amour ? Le marché du coeur,Français,Indifférent,6,6
@@ -32,3 +32,4 @@
 32,Protection de l'environnement,Français,Indifférent,1,2
 33,Histoire du sport dans le Canton de Vaud (1942-1975),Français,Indifférent,2,6
 34,Tyrannie de l'apparence - Dérives et risques des pratiques esthétiques chez les jeunes,Français / Allemand,Groupe,,4
+35,,Libre

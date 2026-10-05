@@ -1,4 +1,4 @@
-﻿Elève,Choix 1,Langue (si choix proposé),Individuel ou en duo,"Choix 1 en duo avec Nom Prénom (si case ""duo"" cochée précédemment)",Choix 2,Langue (si choix proposé),Individuel ou en duo,"Choix 2 en duo avec Nom Prénom (si case ""duo"" cochée précédemment)",Choix 3,Langue (si choix proposé),Individuel ou duo,"Choix 3 en duo avec Nom Prénom (si case ""duo"" cochée précédemment)"
+﻿Elève,Choix 1,Langue (si choix proposé),Individuel ou en duo,"Choix 1 en duo avec Nom Prénom (si case cochée précédemment)",Choix 2,Langue (si choix proposé),Individuel ou en duo.1,"Choix 2 en duo avec Nom Prénom (si case cochée précédemment)",Choix 3,Langue (si choix proposé),Individuel ou en duo.2,"Choix 3 en duo avec Nom Prénom (si case cochée précédemment)"
 PERS_0001,TM10,Français,Individuel,,TM04,Français,Individuel,,TM27,Français,Individuel,
 PERS_0002,TM05,,Duo,PERS_0108,TM02,Français,Duo,PERS_0108,TM26,Français,Duo,PERS_0108
 PERS_0003,TM21,,Individuel,,TM31,,Duo,PERS_0066,TM30,,Individuel,
@@ -134,7 +134,7 @@ PERS_0132,TM24,,Individuel,,TM25,,Individuel,,TM22,,Individuel,
 PERS_0133,TM01,Français,Duo,PERS_0030,TM02,Français,Duo,PERS_0030,TM04,Français,Duo,PERS_0030
 PERS_0134,TM26,Français,Duo,PERS_0089,TM05,Anglais,Duo,PERS_0089,TM34,Français,Duo,PERS_0089
 PERS_0135,TM20,Anglais,Duo,PERS_0173,TM05,Anglais,Individuel,,TM18,Français,Individuel,
-PERS_0136,TM29,Français,Duo,PERS_0093,TM15,Français,Duo,PERS_0093,TM28,Français,Duo,
+PERS_0136,TM29,Français,Duo,PERS_0093,TM15,Français,Duo,PERS_0093,TM28,Français,Individuel,
 PERS_0137,TM18,Français,Duo,PERS_0205,TM11,Français,Duo,PERS_0205,TM26,Français,Duo,PERS_0205
 PERS_0138,TM08,,Individuel,,TM11,,Duo,PERS_0033,TM33,,Individuel,
 PERS_0139,TM29,Français,Duo,PERS_0067,TM26,Français,Duo,PERS_0067,TM15,Français,Duo,PERS_0067
