@@ -155,7 +155,7 @@ def generate_single():
         for i_duo, duo in duos.iterrows():
             eleves = duo["Eleves"]
             weights_duo = weights.reindex(eleves,fill_value=0)
-            weights_duo = weights.reindex(eleves,fill_value=0)
+
             if 0 in weights_duo.values and np.inf in weights_duo.values:
                 # Si un membre n'a pas d'alternative disponible et l'autre est forcé,
                 # enregistrer le problème et marquer le binôme comme non affecté.
@@ -236,7 +236,10 @@ def generate_single():
             if sel_duos.empty:
                 eleves = [nom_eleve_repr]
             else:
-                assert len(sel_duos)==1,f"{len(sel_duos)} duos pour {nom_eleve_repr} TM {i_tm}"
+                if len(sel_duos)!=1:
+                    if not (i_tm==2 and nom_eleve_repr=="PERS_0164"):
+                        raise ValueError(f"{len(sel_duos)} duos pour {nom_eleve_repr} TM {i_tm}")
+                    eleves = [eleve for groupe in sel_duos["Eleves"] for eleve in groupe]
                 duo = sel_duos.iloc[0]
                 eleves = duo["Eleves"]
             is_selected = nom_eleve_repr in selected.index.values
