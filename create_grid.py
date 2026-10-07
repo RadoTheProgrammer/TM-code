@@ -234,7 +234,7 @@ for nom_eleve,eleve in df.iterrows():
     n_tm_libre = 0
     for nchoix,indice in ((1,""),(2,".1"),(3,".2")):
         choix = eleve[f"Choix {nchoix}"]
-        envie = {1:9, 2:3, 3:1}[nchoix]
+        envie = {1:3, 2:2, 3:1}[nchoix]
         if choix=="0":
             df_grid.drop(nom_eleve, inplace=True)
             break

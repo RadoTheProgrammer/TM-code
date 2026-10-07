@@ -158,7 +158,9 @@ class SettingsEditor:
 
         output_file = self.fields.get("OUTPUT_FILE")
         output_path = output_file.get() if output_file else self.original_values.get("OUTPUT_FILE", "")
-
+        dir_path = self.fields.get("DIR").get()
+        if dir_path:
+            output_path = os.path.join(dir_path, output_path)
         try:
             with open(output_path, "r", newline="", encoding="utf-8-sig") as file:
                 reader = csv.DictReader(file)
