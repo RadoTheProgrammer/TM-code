@@ -1,11 +1,11 @@
 import pandas as pd
 
-DIR = "Donnees_TMs/Annee_2"
+DIR = "Annee_28"
 GRID_FILE = f"{DIR}/grid.csv"
 TM_FILE = f"{DIR}/liste_sujets.csv"
 DUO_FILE = f"{DIR}/duo.csv"
 
-RESULT_FILE = f"{DIR}/resultslearned2/r66.csv"
+RESULT_FILE = f"r9516.csv"
 
 df_grid = pd.read_csv(GRID_FILE,index_col=0)
 df_grid.index = df_grid.index.astype(str)

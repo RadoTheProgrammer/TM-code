@@ -15,8 +15,13 @@ from utils import settings_data
 # ============================================================================
 # Initialisation des données
 # ============================================================================
+TM_WEIGHTS_MODE = False  # Mode de calcul des poids pour les TMs
+ELEVES_WEIGHTS_MODE = False  # Mode de calcul des poids pour les élèves
+
+
 data = {}
-rng = np.random.default_rng(settings_data["RANDOM_SEED"])  # Générateur aléatoire
+if settings_data["RANDOM_SEED"] is not None:
+    rng = np.random.default_rng(settings_data["RANDOM_SEED"])  # Générateur aléatoire
 np.random.seed(settings_data["RANDOM_SEED"])
 df_grid_orig = pd.read_csv(settings_data["GRID_FILE"], index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
@@ -102,16 +107,19 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
-        df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**2
-        
+        if TM_WEIGHTS_MODE:
+            df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
+        else:
+            df_tm["weights"] = 1
         return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm), rng)]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
-        candidats["weights"] = weights
+        candidats["weights"] = weights**settings_data["PUISSANCE_ELEVES"]
+        if i_tm==20:
+            pass
         candidats2 =candidats.sort_values("weights",ascending=False)
-
-        return candidats2.head(int(maximum-len(forced)))
+        selected_index = numpy_sample(candidats.index, weights,int(maximum-len(forced)), rng)
         # try:
         #     selected = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         # # selected_unique = selected[~selected.index.duplicated(keep="first")]
@@ -131,7 +139,7 @@ def generate_single():
         return candidats.loc[selected_index]
     i = 0
     for i_tm,tm in shuffle_tm().iterrows():
-
+        
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
         i_tm = int(i_tm) # type: ignore
         mask = df_grid[str(i_tm)] > 0
@@ -150,7 +158,10 @@ def generate_single():
 
         # Calculer les poids comme le rapport entre le score du choix courant et
         # les autres scores disponibles.
-        weights = a/b*(nproblems_eleves[candidats.index]+1)
+        if ELEVES_WEIGHTS_MODE:
+            weights = a/b*(nproblems_eleves[candidats.index]+1)
+        else:
+            weights = a/b
         maximum = int(tm["Nombre maximal travaux"])
 
         # Gérer les poids des binômes et garantir que les membres sont affectés ensemble.
@@ -239,8 +250,8 @@ def generate_single():
                 eleves = [nom_eleve_repr]
             else:
                 if len(sel_duos)!=1:
-                    if not (i_tm==2 and nom_eleve_repr=="PERS_0164"):
-                        raise ValueError(f"{len(sel_duos)} duos pour {nom_eleve_repr} TM {i_tm}")
+                    print(f"Attention : {len(sel_duos)} duos pour {nom_eleve_repr} TM {i_tm}")
+
                     eleves = [eleve for groupe in sel_duos["Eleves"] for eleve in groupe]
                 duo = sel_duos.iloc[0]
                 eleves = duo["Eleves"]
@@ -250,6 +261,9 @@ def generate_single():
                     pass
                 if is_selected:
                     choice_weight = candidats.at[nom_eleve,str(i_tm)]
+                    if choice_weight==1:
+                        print(df_grid.loc[nom_eleve])
+                        pass
                     decision_data["Id"].append(nom_eleve)
                     decision_data["Choice"].append(i_tm)
                     decision_data["ChoiceWeight"].append(choice_weight)
