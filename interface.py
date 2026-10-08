@@ -32,8 +32,14 @@ class SettingsEditor:
         title = ttk.Label(main, text="Paramètres du projet", font=("Segoe UI", 12, "bold"))
         title.pack(anchor="w", pady=(0, 10))
 
-        canvas = tk.Canvas(main, highlightthickness=0)
-        scrollbar = ttk.Scrollbar(main, orient="vertical", command=canvas.yview)
+        scroll_frame = ttk.Frame(main)
+        canvas = tk.Canvas(scroll_frame, highlightthickness=0)
+        vertical_scrollbar = ttk.Scrollbar(
+            scroll_frame, orient="vertical", command=canvas.yview
+        )
+        horizontal_scrollbar = ttk.Scrollbar(
+            scroll_frame, orient="horizontal", command=canvas.xview
+        )
         # Container for all setting rows; placing it inside the canvas makes the
         # form scrollable while keeping the scrollbar attached to the canvas.
         self.form_frame = ttk.Frame(canvas)
@@ -43,17 +49,27 @@ class SettingsEditor:
             lambda event: canvas.configure(scrollregion=canvas.bbox("all")),
         )
 
-        canvas.create_window((0, 0), window=self.form_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        form_window = canvas.create_window((0, 0), window=self.form_frame, anchor="nw")
+        canvas.bind(
+            "<Configure>",
+            lambda event: canvas.itemconfigure(form_window, width=event.width),
+        )
+        canvas.configure(
+            yscrollcommand=vertical_scrollbar.set,
+            xscrollcommand=horizontal_scrollbar.set,
+        )
 
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        scroll_frame.rowconfigure(0, weight=1)
+        scroll_frame.columnconfigure(0, weight=1)
+        canvas.grid(row=0, column=0, sticky="nsew")
+        vertical_scrollbar.grid(row=0, column=1, sticky="ns")
+        horizontal_scrollbar.grid(row=1, column=0, sticky="ew")
 
         self._build_form()
         self._build_results_frame()
 
         actions = ttk.Frame(main)
-        actions.pack(fill="x", pady=(12, 0))
+        actions.pack(side="bottom", fill="x", pady=(12, 0))
 
         self.progress_text = tk.StringVar()
         ttk.Label(actions, textvariable=self.progress_text).pack(side="left")
@@ -61,6 +77,8 @@ class SettingsEditor:
         self.generate_button = ttk.Button(actions, text="Générer", command=self.generate)
         self.generate_button.pack(side="right")
         ttk.Button(actions, text="Fermer", command=self.close).pack(side="right", padx=(0, 8))
+
+        scroll_frame.pack(fill="both", expand=True)
 
     def close(self):
         self.stop_generating()
@@ -81,7 +99,9 @@ class SettingsEditor:
     "NPROBLEMS_TM_FILE": "nproblems_tm_df.csv",
     "ELEVES_FILE": "",
     "N_TRIES": 10000,
-    "RANDOM_SEED": 67
+    "RANDOM_SEED": 67,
+    "PUISSANCE_ELEVES": 1.0,
+    "PUISSANCE_TM": 1.0
 }
 
     def _is_file_setting(self, name, value):
@@ -103,27 +123,28 @@ class SettingsEditor:
             # )
             # row.pack(fill="x", pady=0)
 
-            row = tk.Frame(self.form_frame)
+            row = ttk.Frame(self.form_frame)
             row.pack(fill="x", pady=12)
             #row = ttk.Frame(self.form_frame, bg="red",padding=(0, 12))
 
             #row.pack(fill="x",pady=0)
 
-            label = ttk.Label(row, text=settings_description.get(name, name), width=40, anchor="w")
-            label.pack(side="left")
+            label = ttk.Label(row, text=settings_description.get(name, name), width=32, anchor="w")
+            label.grid(row=0, column=0, sticky="w")
 
             var = tk.StringVar(value=str(value))
             entry = ttk.Entry(row, textvariable=var)
-            entry.pack(side="left", fill="x", expand=True, padx=(40, 6))
 
             if name in ("TM_FILE", "ELEVES_FILE"):
                 button = ttk.Button(row, text="Parcourir", command=lambda n=name, v=var: self.choose_file(n, v))
-                button.pack(side="left")
+                button.grid(row=0, column=2, padx=(6, 0))
 
             if name=="DIR":
                 # Add a button to open the directory in the file explorer
                 button = ttk.Button(row, text="Parcourir", command=lambda v=var: self.choose_directory(v))
-                button.pack(side="left")
+                button.grid(row=0, column=2, padx=(6, 0))
+            entry.grid(row=0, column=1, sticky="ew", padx=(8, 0))
+            row.columnconfigure(1, weight=1)
             self.fields[name] = var
 
     def choose_directory(self, variable):
