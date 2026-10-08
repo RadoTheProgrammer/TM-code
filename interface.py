@@ -189,15 +189,16 @@ class SettingsEditor:
                 rows = list(reader)
                 print(rows)
                 pass
+        except FileNotFoundError:
+            # Generation may not have created the output file yet. Start with
+            # an empty table; its columns are populated from generated results.
+            columns = []
+            rows = []
         except (OSError, csv.Error) as error:
             ttk.Label(
                 table_frame,
                 text=f"Impossible de lire le fichier de résultats : {error}",
             ).pack(anchor="w")
-            return
-
-        if not columns:
-            ttk.Label(table_frame, text="Le fichier de résultats est vide.").pack(anchor="w")
             return
 
         columns = ["Index", *columns]
@@ -240,7 +241,7 @@ class SettingsEditor:
 
         index = tree.set(item, "Index")
         details_path = os.path.join(
-            self.fields["OUTPUT_DIR"].get(),
+            self.fields["DIR"].get()+"/results",
             f"r{index}.csv",
         )
 
@@ -256,7 +257,7 @@ class SettingsEditor:
                 parent=self.master,
             )
             return
-
+        
         details_window = tk.Toplevel(self.master)
         details_window.title(f"Détails de la répartition {index}")
         details_window.geometry("700x450")
@@ -285,11 +286,40 @@ class SettingsEditor:
         for row in rows:
             details_tree.insert("", "end", values=[row.get(column, "") for column in columns])
 
-        details_window.rowconfigure(0, weight=1)
+        ttk.Button(
+            details_window,
+            text="Exporter",
+            command=lambda: self.export_tree(details_tree, columns),
+        ).grid(row=0, column=0, sticky="e", padx=6, pady=6)
+
+        details_window.rowconfigure(1, weight=1)
         details_window.columnconfigure(0, weight=1)
-        details_tree.grid(row=0, column=0, sticky="nsew")
-        vertical_scrollbar.grid(row=0, column=1, sticky="ns")
-        horizontal_scrollbar.grid(row=1, column=0, sticky="ew")
+        details_tree.grid(row=1, column=0, sticky="nsew")
+        vertical_scrollbar.grid(row=1, column=1, sticky="ns")
+        horizontal_scrollbar.grid(row=2, column=0, sticky="ew")
+
+    def export_tree(self, tree, columns):
+        path = filedialog.asksaveasfilename(
+            title="Exporter les résultats",
+            defaultextension=".csv",
+            filetypes=(("Fichiers CSV", "*.csv"), ("Tous les fichiers", "*.*")),
+            parent=tree.winfo_toplevel(),
+        )
+        if not path:
+            return
+
+        try:
+            with open(path, "w", newline="", encoding="utf-8-sig") as file:
+                writer = csv.writer(file)
+                writer.writerow(columns)
+                for item in tree.get_children(""):
+                    writer.writerow(tree.set(item, column) for column in columns)
+        except OSError as error:
+            messagebox.showerror(
+                "Export impossible",
+                f"Impossible d'enregistrer le fichier : {error}",
+                parent=tree.winfo_toplevel(),
+            )
 
     def _configure_sortable_tree(self, tree, columns):
         for column in columns:
@@ -387,6 +417,10 @@ class SettingsEditor:
                 return
 
             columns = tree["columns"]
+            if len(columns) == 1:
+                columns = ["Index", *data_single.keys()]
+                tree.configure(columns=columns)
+                self._configure_sortable_tree(tree, columns)
             index = len(tree.get_children())
             tree.insert(
                 "",

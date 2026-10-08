@@ -3,3 +3,10 @@ __pycache__/*
 build*/
 dist/
 r*.csv
+!r9516.csv
+!r9546.csv
+!r9630.csv
+!r9774.csv
+!r9878.csv
+!r9675.csv
+!r9676.csv
