@@ -20,9 +20,9 @@ ELEVES_WEIGHTS_MODE = False  # Mode de calcul des poids pour les élèves
 
 
 data = {}
+
 if settings_data["RANDOM_SEED"] is not None:
-    rng = np.random.default_rng(settings_data["RANDOM_SEED"])  # Générateur aléatoire
-np.random.seed(settings_data["RANDOM_SEED"])
+    np.random.seed(settings_data["RANDOM_SEED"])
 df_grid_orig = pd.read_csv(settings_data["GRID_FILE"], index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
 if os.path.exists(settings_data["NPROBLEMS_ELEVES_FILE"]):
@@ -63,7 +63,7 @@ if os.path.exists(settings_data["OUTPUT_FILE"]):
 else:
     results = None
 
-def numpy_sample(population, weights, k, random_state):
+def numpy_sample(population, weights, k):
     """
     Échantillonne k éléments de la population en utilisant les poids donnés.
 
@@ -71,7 +71,6 @@ def numpy_sample(population, weights, k, random_state):
         population (list): Liste des éléments à échantillonner.
         weights (list): Liste des poids correspondants à chaque élément.
         k (int): Nombre d'éléments à échantillonner.
-        random_state (int): Graine pour la reproductibilité.
 
     Returns:
         list: Liste des éléments échantillonnés.
@@ -111,31 +110,17 @@ def generate_single():
             df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
         else:
             df_tm["weights"] = 1
-        return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm), rng)]
+        return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm))]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
-        candidats["weights"] = weights**settings_data["PUISSANCE_ELEVES"]
+        candidats["weights"] = weights**99999
         if i_tm==20:
             pass
         candidats2 =candidats.sort_values("weights",ascending=False)
-        selected_index = numpy_sample(candidats.index, weights,int(maximum-len(forced)), rng)
-        # try:
-        #     selected = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
-        # # selected_unique = selected[~selected.index.duplicated(keep="first")]
-        # # if len(selected_unique)<minimum-len(forced):
-        # #     pass
-        # #     problems.append((i_tm,f"Pas assez après duplication : {len(selected_unique)}<{minimum-len(forced)}"))
-        # #     nproblems_tm[i_tm] += 1
-        # except ValueError as e:
-        #     if settings_data["FORCE_MIN"]:
-        #         u = np.random.random(len(candidats))
-        #         keys = -np.log(u) / (nproblems_tm+1).to_numpy()
+        return candidats2.head(int(maximum-len(forced)))
+        selected_index = numpy_sample(candidats.index, weights,int(maximum-len(forced)))
 
-        #         df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
-        #     problems.append((i_tm,"Impossible de sélectionner le nombre requis de candidats"))
-        #     nproblems_tm[i_tm] += 1
-        #     selected = default_df
         return candidats.loc[selected_index]
     i = 0
     for i_tm,tm in shuffle_tm().iterrows():
@@ -227,7 +212,7 @@ def generate_single():
                 problems["tropnombreux"].append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
                 weights_tm = nproblems_tm.sum(axis=1)+1
                 prob = weights_tm[i_tm]/np.sum(weights_tm)
-                print(problems["tropnombreux"][-1],i/len(df_tm),prob)
+                #print(problems["tropnombreux"][-1],i/len(df_tm),prob)
                 selected = forced
                 nproblems_tm.loc[i_tm, "tropnombreux"] = (
                     pd.to_numeric(nproblems_tm.loc[i_tm, "tropnombreux"], errors="coerce") + 1
@@ -262,7 +247,7 @@ def generate_single():
                 if is_selected:
                     choice_weight = candidats.at[nom_eleve,str(i_tm)]
                     if choice_weight==1:
-                        print(df_grid.loc[nom_eleve])
+                        #print(df_grid.loc[nom_eleve])
                         pass
                     decision_data["Id"].append(nom_eleve)
                     decision_data["Choice"].append(i_tm)
