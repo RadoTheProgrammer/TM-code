@@ -118,6 +118,7 @@ def generate_single():
         if i_tm==20:
             pass
         candidats2 =candidats.sort_values("weights",ascending=False)
+        candidats2 = candidats2[candidats2["weights"]>0]
         return candidats2.head(int(maximum-len(forced)))
         selected_index = numpy_sample(candidats.index, weights,int(maximum-len(forced)))
 
