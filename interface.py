@@ -409,7 +409,7 @@ class SettingsEditor:
                 "Erreur",
                 f"Une erreur s'est produite lors de l'exécution de l'algorithme:\n{error}",
             )
-
+        self.generating = False
     def update_progress(self, data_single):
         def insert_row():
             tree = getattr(self, "results_tree", None)
