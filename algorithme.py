@@ -128,6 +128,9 @@ def generate_single():
         
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
         i_tm = int(i_tm) # type: ignore
+        #print(list(df_grid.columns))
+        if i_tm==34:
+            continue
         mask = df_grid[str(i_tm)] > 0
 
         candidats = df_grid[mask]
