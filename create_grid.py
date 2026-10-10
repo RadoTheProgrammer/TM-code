@@ -250,14 +250,21 @@ for nom_eleve,eleve in df.iterrows():
                 print(tm_libre.index)
                 pass
             print(f"Attention: élève {nom_eleve} a choisi le TM {choix} avec langue '{langue}' qui ne correspond pas à la langue du TM '{langue_tm}'")
+            #continue
         igi = df_tm.at[choix,COLUMN_IGI]
-        if igi==IGI_INDIVIDUEL:
-            if ind_ou_duo!="Individuel":
-                print(f"TM {choix} est marqué comme individuel mais l'élève {nom_eleve} a indiqué '{ind_ou_duo}'")
-        elif igi==IGI_GROUPE:
-            if ind_ou_duo!="Duo":
-                print(f"TM {choix} est marqué comme groupe mais l'élève {nom_eleve} a indiqué '{ind_ou_duo}'")
-        if ind_ou_duo=="Duo":
+        if nom_eleve=="PERS_0001":
+            pass
+
+        if ind_ou_duo=="Individuel":
+            if igi==IGI_GROUPE:
+                print(f"TM {choix} est marqué comme groupe mais l'élève {nom_eleve} a indiqué 'Individuel'")
+                continue
+            df_grid.at[nom_eleve,choix] = envie
+        else:
+            assert ind_ou_duo=="Duo"
+            if igi==IGI_INDIVIDUEL:
+                print(f"TM {choix} est marqué comme individuel mais l'élève {nom_eleve} a indiqué 'Duo'")
+                continue
 
             nom_eleve2 = str(eleve[f"Choix {nchoix} en duo avec Nom Prénom (si case cochée précédemment)"])
             assert not pd.isna(nom_eleve2)
@@ -282,19 +289,21 @@ for nom_eleve,eleve in df.iterrows():
 
             else:
                 df_duo.loc[len(df_duo)]=[eleves,choix,{nom_eleve},{envie}]
+            df_grid.at[nom_eleve,choix] = envie
 
-        else:
-            assert ind_ou_duo=="Individuel"
+
         
 
 
-        df_grid.at[nom_eleve,choix] = envie
+        
 
     if n_tm_libre>1:
         print(f"Eleve {nom_eleve} a {n_tm_libre} tm libre")
 for _,duo in df_duo.iterrows():
     if duo["Eleves"]!=duo["ElevesAccord"]:
         print(f"Problème duo: {duo}")
+        for eleve in duo["ElevesAccord"]:
+            df_grid.at[eleve,duo["Choix"]] = np.nan
 
 df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
 df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))

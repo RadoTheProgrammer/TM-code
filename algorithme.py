@@ -233,7 +233,8 @@ def generate_single():
 
         # Supprimer les éventuels doublons de candidats sélectionnés.
         selected = selected[~selected.index.duplicated(keep="first")]
-
+        if i_tm==2:
+            pass
         # Pour chaque candidat, indiquer s'il est sélectionné ou non et mettre à jour la grille.
         repr = duos["Repr"].values
         if 54 in duos["Repr"]:
