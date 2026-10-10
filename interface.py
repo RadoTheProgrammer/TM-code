@@ -440,11 +440,13 @@ class SettingsEditor:
 
     def _run_generation(self):
         try:
-            assert self.fields.get("DIR") is not None
-            if not os.path.exists(os.path.join(self.fields.get("DIR").get(), self.original_values["GRID_FILE"])):
-                import create_grid
-            import algorithme
-            algorithme.generate(self)
+            if self.fields.get("DIR") is None:
+                raise ValueError("Le répertoire de travail n'est pas configuré.")
+            else:
+                if not os.path.exists(os.path.join(self.fields.get("DIR").get(), self.original_values["GRID_FILE"])):
+                    import create_grid
+                import algorithme
+                algorithme.generate(self)
         except Exception as error:
             self.master.after(0, self._generation_finished, error)
         else:

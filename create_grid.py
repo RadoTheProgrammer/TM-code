@@ -300,7 +300,7 @@ for nom_eleve,eleve in df.iterrows():
     if n_tm_libre>1:
         print(f"Eleve {nom_eleve} a {n_tm_libre} tm libre")
 n = 0
-for _,duo in df_duo.iterrows():
+for idx,duo in df_duo.iterrows():
     if duo["Eleves"]!=duo["ElevesAccord"]:
         print(f"Problème duo: {duo}")
         for eleve in duo["Eleves"]:
@@ -311,9 +311,10 @@ for _,duo in df_duo.iterrows():
                     if duo["Choix"]==int(df.at[eleve,f"Choix {nchoix}"][-2:]):
                         if df.at[eleve,f"Individuel ou en duo{indice}"]=="Individuel":
                             print(f"élève {eleve} a peut-être mal indiqué son partenaire pour le TM {duo['Choix']} choix {nchoix}")
+                df_duo.drop(idx,inplace=True)
 
         n+=1
-print(f"{n} duos sur {len(df_duo)} non accordés")
+print(f"{n} duos sur {len(df_duo)+n} non accordés")
 df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
 df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
 df_duo.to_csv(settings_data["DUO_FILE"],index=False)

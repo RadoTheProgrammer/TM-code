@@ -114,19 +114,21 @@ def generate_single():
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
-        candidats["weights"] = weights**99999
+        candidats["weights"] = weights**10
         if i_tm==20:
             pass
         candidats2 =candidats.sort_values("weights",ascending=False)
         candidats2 = candidats2[candidats2["weights"]>0]
-        return candidats2.head(int(maximum-len(forced)))
-        selected_index = numpy_sample(candidats.index, weights,int(maximum-len(forced)))
+        #return candidats2.head(int(maximum-len(§forced)))
+        selected_index = numpy_sample(candidats.index, candidats["weights"],int(maximum-len(forced)))
+        
 
+        print(candidats2["weights"],selected_index)
+        if list(selected_index) == ['PERS_0141']:
+                pass
         return candidats.loc[selected_index]
     i = 0
     for i_tm,tm in shuffle_tm().iterrows():
-        if i_tm in (2,11,26):
-            print(f"TM {i_tm}")
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
         i_tm = int(i_tm) # type: ignore
         #print(list(df_grid.columns))
@@ -134,9 +136,7 @@ def generate_single():
         mask = df_grid[str(i_tm)] > 0
 
         candidats = df_grid[mask]
-        if i_tm==2:
-            print("PERS_0031" in candidats.index)
-            pass
+
         # a: Score de préférence pour le TM courant
         # b: Somme des autres scores de TM.
         a = candidats[str(i_tm)]
@@ -158,8 +158,7 @@ def generate_single():
         # Gérer les poids des binômes et garantir que les membres sont affectés ensemble.
         for i_duo, duo in duos.iterrows():
             eleves = duo["Eleves"]
-            if i_tm==2:
-                print(eleves)
+
             weights_duo = weights.reindex(eleves,fill_value=0)
             if i_tm==2 and eleves==['PERS_0164', 'PERS_0031']:
                 pass
@@ -286,11 +285,12 @@ def generate_single():
         data["TMnonouverts"]=(TM_non_ouverts)
         for n_envie in [1,2,3]:
             
-            data[f"NbEnvie{n_envie}"] = (df_decision_data["ChoiceWeight"]==n_envie).sum()
+            data[f"NbEnvie{n_envie}"] = (df_decision_data["ChoiceWeight"]==n_envie).mean()
         #print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
         # Si l'affectation est incomplète, afficher les diagnostics.
+        raise ValueError(f"Erreur : le nombre d'élèves dans la grille ({len(df_grid)}) ne correspond pas au nombre d'élèves dans les décisions ({len(df_decision_data)}).")
         print(len(df_grid))
         print(len(df_decision_data))
 
@@ -300,7 +300,7 @@ def generate(interface_object=None):
     i_try = 0
     while True:
         random_seed = len(results) if results is not None else 0
-        random_seed = 1723
+        #random_seed = 25731
         print(f"Essai {i_try} avec random_seed={random_seed}")
         np.random.seed(random_seed)
         data_single = generate_single()
