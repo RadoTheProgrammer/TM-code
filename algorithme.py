@@ -106,25 +106,43 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
-        if TM_WEIGHTS_MODE:
-            df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
-        else:
-            df_tm["weights"] = 1
+        df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
         return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm))]
     def select_candidates():
-        #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
-        #print(weights.values)
-        candidats["weights"] = weights**settings_data["PUISSANCE_ELEVE"]
-        if i_tm==20:
-            pass
-        candidats2 =candidats.sort_values("weights",ascending=False)
-        candidats2 = candidats2[candidats2["weights"]>0]
-        #return candidats2.head(int(maximum-len(§forced)))
-        selected_index = numpy_sample(candidats.index, candidats["weights"],int(maximum-len(forced)))
-        
+        n_to_assign = int(maximum - len(forced))
+        if n_to_assign <= 0:
+            return candidats.iloc[0:0]
 
-        if list(selected_index) == ['PERS_0141']:
-                pass
+        candidate_weights = (weights**settings_data["PUISSANCE_ELEVE"]).dropna()
+        candidate_weights = candidate_weights[candidate_weights > 0]
+        rank1_counts = {}
+        for candidate in candidate_weights.index:
+            candidate_duo = duos[duos["Repr"] == candidate]
+            members = (
+                candidate_duo.iloc[0]["Eleves"]
+                if len(candidate_duo)
+                else [candidate]
+            )
+            rank1_counts[candidate] = int(
+                (candidats.loc[members, str(i_tm)] == 1).sum()
+            )
+
+        selected_index = []
+        for rank1_count in sorted(set(rank1_counts.values())):
+            remaining = n_to_assign - len(selected_index)
+            if remaining <= 0:
+                break
+            tier = candidate_weights[
+                [rank1_counts[candidate] == rank1_count for candidate in candidate_weights.index]
+            ]
+            if len(tier) <= remaining:
+                selected_index.extend(tier.index)
+            else:
+                selected_index.extend(
+                    numpy_sample(tier.index, tier, remaining)
+                )
+                break
+
         return candidats.loc[selected_index]
     i = 0
     for i_tm,tm in shuffle_tm().iterrows():
