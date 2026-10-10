@@ -440,7 +440,8 @@ class SettingsEditor:
 
     def _run_generation(self):
         try:
-            if not os.path.exists(self.original_values["GRID_FILE"]):
+            assert self.fields.get("DIR") is not None
+            if not os.path.exists(os.path.join(self.fields.get("DIR").get(), self.original_values["GRID_FILE"])):
                 import create_grid
             import algorithme
             algorithme.generate(self)

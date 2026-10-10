@@ -125,16 +125,18 @@ def generate_single():
         return candidats.loc[selected_index]
     i = 0
     for i_tm,tm in shuffle_tm().iterrows():
-        
+        if i_tm in (2,11,26):
+            print(f"TM {i_tm}")
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
         i_tm = int(i_tm) # type: ignore
         #print(list(df_grid.columns))
-        if i_tm==34:
-            continue
+
         mask = df_grid[str(i_tm)] > 0
 
         candidats = df_grid[mask]
-        
+        if i_tm==2:
+            print("PERS_0031" in candidats.index)
+            pass
         # a: Score de préférence pour le TM courant
         # b: Somme des autres scores de TM.
         a = candidats[str(i_tm)]
@@ -156,8 +158,11 @@ def generate_single():
         # Gérer les poids des binômes et garantir que les membres sont affectés ensemble.
         for i_duo, duo in duos.iterrows():
             eleves = duo["Eleves"]
+            if i_tm==2:
+                print(eleves)
             weights_duo = weights.reindex(eleves,fill_value=0)
-
+            if i_tm==2 and eleves==['PERS_0164', 'PERS_0031']:
+                pass
             if 0 in weights_duo.values and np.inf in weights_duo.values:
                 # Si un membre n'a pas d'alternative disponible et l'autre est forcé,
                 # enregistrer le problème et marquer le binôme comme non affecté.
@@ -293,6 +298,10 @@ def generate(interface_object=None):
     global results
     i_try = 0
     while True:
+        random_seed = len(results) if results is not None else 0
+        random_seed = 1723
+        print(f"Essai {i_try} avec random_seed={random_seed}")
+        np.random.seed(random_seed)
         data_single = generate_single()
         data_framed =  data_single.to_frame().T
         if results is None:
