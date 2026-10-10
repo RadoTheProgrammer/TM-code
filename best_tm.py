@@ -1,4 +1,4 @@
-DIR = "Donnees_TMs/Annee_2"
+DIR = "Donnees_TMs/Annee_28"
 INPUT_FILE = f"{DIR}/grid.csv" 
 
 import pandas as pd

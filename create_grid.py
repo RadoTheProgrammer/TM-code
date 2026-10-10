@@ -250,20 +250,20 @@ for nom_eleve,eleve in df.iterrows():
                 print(tm_libre.index)
                 pass
             print(f"Attention: élève {nom_eleve} a choisi le TM {choix} avec langue '{langue}' qui ne correspond pas à la langue du TM '{langue_tm}'")
-            #continue
+            continue
         igi = df_tm.at[choix,COLUMN_IGI]
         if nom_eleve=="PERS_0001":
             pass
 
         if ind_ou_duo=="Individuel":
             if igi==IGI_GROUPE:
-                print(f"TM {choix} est marqué comme groupe mais l'élève {nom_eleve} a indiqué 'Individuel'")
+                print(f"TM {choix} est marqué comme groupe mais l'élève {nom_eleve} a indiqué 'Individuel' (choix {nchoix})")
                 continue
             df_grid.at[nom_eleve,choix] = envie
         else:
             assert ind_ou_duo=="Duo"
             if igi==IGI_INDIVIDUEL:
-                print(f"TM {choix} est marqué comme individuel mais l'élève {nom_eleve} a indiqué 'Duo'")
+                print(f"TM {choix} est marqué comme individuel mais l'élève {nom_eleve} a indiqué 'Duo' (choix {nchoix})")
                 continue
 
             nom_eleve2 = str(eleve[f"Choix {nchoix} en duo avec Nom Prénom (si case cochée précédemment)"])
@@ -299,12 +299,21 @@ for nom_eleve,eleve in df.iterrows():
 
     if n_tm_libre>1:
         print(f"Eleve {nom_eleve} a {n_tm_libre} tm libre")
+n = 0
 for _,duo in df_duo.iterrows():
     if duo["Eleves"]!=duo["ElevesAccord"]:
         print(f"Problème duo: {duo}")
-        for eleve in duo["ElevesAccord"]:
-            df_grid.at[eleve,duo["Choix"]] = np.nan
+        for eleve in duo["Eleves"]:
+            if eleve in duo["ElevesAccord"]:
+                df_grid.at[eleve,duo["Choix"]] = np.nan
+            else:
+                for nchoix,indice in ((1,""),(2,".1"),(3,".2")):
+                    if duo["Choix"]==int(df.at[eleve,f"Choix {nchoix}"][-2:]):
+                        if df.at[eleve,f"Individuel ou en duo{indice}"]=="Individuel":
+                            print(f"élève {eleve} a peut-être mal indiqué son partenaire pour le TM {duo['Choix']} choix {nchoix}")
 
+        n+=1
+print(f"{n} duos sur {len(df_duo)} non accordés")
 df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
 df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
 df_duo.to_csv(settings_data["DUO_FILE"],index=False)

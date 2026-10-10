@@ -16,7 +16,7 @@ PERS_0014,TM34,Français,Duo,PERS_0107,TM03,Français,Duo,PERS_0107,TM13,França
 PERS_0015,TM26,Français,Duo,PERS_0025,TM02,Français,Duo,PERS_0025,TM04,Français,Individuel,
 PERS_0016,TM02,Français,Duo,PERS_0061,TM26,Français,Duo,PERS_0061,TM11,Français,Duo,PERS_0061
 PERS_0017,TM17,Français,Individuel,,TM03,Français,Individuel,,TM34,Français,Individuel,
-PERS_0018,TM26,Allemand,Individuel,,TM19,Allemand,Individuel,,TM01,Allemand,Individuel,
+PERS_0018,TM26,Allemand,Duo,PERS_0081,TM19,Allemand,Duo,PERS_0081,TM01,Allemand,Individuel,
 PERS_0019,TM26,Français,Duo,PERS_0045,TM02,Français,Duo,PERS_0045,TM04,Français,Duo,PERS_0045
 PERS_0020,TM27,Français,Individuel,,TM34,Français,Individuel,,TM32,Français,Individuel,
 PERS_0021,TM04,Français,Individuel,,TM27,Français,Individuel,,TM33,Français,Individuel,
