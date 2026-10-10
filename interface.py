@@ -238,34 +238,68 @@ class SettingsEditor:
         item = tree.identify_row(event.y)
         if not item:
             return
-
         index = tree.set(item, "Index")
-        details_path = os.path.join(
-            self.fields["DIR"].get()+"/results",
-            f"r{index}.csv",
-        )
-
+        index = tree.set(item, "Index")
         try:
+            details_path = os.path.join(
+                self._configured_path("OUTPUT_DIR", "results"),
+                f"r{index}.csv",
+            )
             with open(details_path, "r", newline="", encoding="utf-8-sig") as file:
                 reader = csv.DictReader(file)
                 columns = list(reader.fieldnames or [])
                 rows = list(reader)
-        except (OSError, csv.Error) as error:
+        except (OSError, csv.Error, ValueError) as error:
             messagebox.showerror(
                 "Détails indisponibles",
                 f"Impossible de lire le fichier de détails : {error}",
                 parent=self.master,
             )
             return
-        
+
+        try:
+            from verificateur import verify_repartition
+
+            problems = verify_repartition(
+                self._configured_path("GRID_FILE", "grid.csv"),
+                self._configured_path("TM_FILE", ""),
+                self._configured_path("DUO_FILE", "duo.csv"),
+                details_path,
+            )
+        except (OSError, csv.Error, ValueError, KeyError) as error:
+            problems = [f"Vérification impossible : {error}"]
+            messagebox.showerror(
+                "Vérification impossible",
+                f"Impossible de vérifier cette répartition : {error}",
+                parent=self.master,
+            )
+
         details_window = tk.Toplevel(self.master)
         details_window.title(f"Détails de la répartition {index}")
         details_window.geometry("700x450")
         details_window.minsize(500, 300)
 
+        problems_frame = ttk.LabelFrame(details_window, text="Problèmes détectés")
+        problems_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=6, pady=6)
+        problems_frame.rowconfigure(0, weight=1)
+        problems_frame.columnconfigure(0, weight=1)
+
+        problems_text = tk.Text(problems_frame, height=5, wrap="word")
+        problems_scrollbar = ttk.Scrollbar(
+            problems_frame, orient="vertical", command=problems_text.yview
+        )
+        problems_text.configure(yscrollcommand=problems_scrollbar.set)
+        problems_text.insert(
+            "1.0",
+            "\n".join(problems) if problems else "Aucun problème détecté.",
+        )
+        problems_text.configure(state="disabled")
+        problems_text.grid(row=0, column=0, sticky="nsew")
+        problems_scrollbar.grid(row=0, column=1, sticky="ns")
+
         if not columns:
-            ttk.Label(details_window, text="Le fichier de détails est vide.").pack(
-                anchor="w", padx=12, pady=12
+            ttk.Label(details_window, text="Le fichier de détails est vide.").grid(
+                row=1, column=0, sticky="w", padx=12, pady=12
             )
             return
 
@@ -290,13 +324,29 @@ class SettingsEditor:
             details_window,
             text="Exporter",
             command=lambda: self.export_tree(details_tree, columns),
-        ).grid(row=0, column=0, sticky="e", padx=6, pady=6)
+        ).grid(row=1, column=0, sticky="e", padx=6, pady=6)
 
-        details_window.rowconfigure(1, weight=1)
+        details_window.rowconfigure(2, weight=1)
         details_window.columnconfigure(0, weight=1)
-        details_tree.grid(row=1, column=0, sticky="nsew")
-        vertical_scrollbar.grid(row=1, column=1, sticky="ns")
-        horizontal_scrollbar.grid(row=2, column=0, sticky="ew")
+        details_tree.grid(row=2, column=0, sticky="nsew")
+        vertical_scrollbar.grid(row=2, column=1, sticky="ns")
+        horizontal_scrollbar.grid(row=3, column=0, sticky="ew")
+
+    def _configured_path(self, name, default):
+        field = self.fields.get(name)
+        configured_path = field.get() if field else self.original_values.get(name, default)
+        if not configured_path:
+            raise ValueError(f"Le chemin « {name} » n’est pas configuré.")
+
+        directory_field = self.fields.get("DIR")
+        directory = (
+            directory_field.get()
+            if directory_field
+            else self.original_values.get("DIR", "")
+        )
+        if os.path.isabs(configured_path):
+            return configured_path
+        return os.path.join(directory or os.getcwd(), configured_path)
 
     def export_tree(self, tree, columns):
         path = filedialog.asksaveasfilename(

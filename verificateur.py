@@ -1,73 +1,65 @@
 import pandas as pd
 
-DIR = "Annee_28"
-GRID_FILE = f"{DIR}/grid.csv"
-TM_FILE = f"{DIR}/liste_sujets.csv"
-DUO_FILE = f"{DIR}/duo.csv"
 
-RESULT_FILE = f"r9516.csv"
+def verify_repartition(grid_file, tm_file, duo_file, result_file):
+    df_grid = pd.read_csv(grid_file, index_col=0)
+    df_grid.index = df_grid.index.astype(str)
 
-df_grid = pd.read_csv(GRID_FILE,index_col=0)
-df_grid.index = df_grid.index.astype(str)
+    df_tm = pd.read_csv(tm_file, index_col=0)
+    df_tm = df_tm[df_tm["Langue"] != "Libre"]
 
-df_tm = pd.read_csv(TM_FILE,index_col=0)
-df_tm = df_tm.iloc[:-1] # enlever TM libre
+    df_result = pd.read_csv(result_file, index_col=0)
+    df_result.index = df_result.index.astype(str)
+    choices = pd.to_numeric(df_result["Choice"], errors="coerce")
 
-df_result = pd.read_csv(RESULT_FILE,index_col=0)
-df_result.index = df_result.index.astype(str)
+    df_duo = pd.read_csv(duo_file)
+    df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")
+    df_duo["Repr"] = df_duo["Eleves"].str[0]
 
-df_duo = pd.read_csv(DUO_FILE)
-df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")
-df_duo["Repr"] = df_duo["Eleves"].str[0]
+    assigned_students = set(df_result.index[choices.notna() & choices.ne(0)])
+    problems = [
+        f"Élève non attribué : {student}"
+        for student in df_grid.index
+        if student not in assigned_students
+    ]
 
-for nom_eleve,eleve in df_grid.iterrows():
-    eleve_result = df_result.loc[nom_eleve]
-
-    if not isinstance(eleve_result,pd.Series):
-        print(f"{nom_eleve} a {len(eleve_result)} TMs")
-        if not len(eleve_result):
+    for tm_id, tm in df_tm.iterrows():
+        maximum = pd.to_numeric(tm["Nombre maximal travaux"], errors="coerce")
+        if pd.isna(maximum):
             continue
-        eleve_result = eleve_result.iloc[0]
-    tm = int(eleve_result["Choice"])
-    #print(eleve)
-    if not tm:
-        print(f"{nom_eleve} n'a pas de TM")
-        continue
-    envie = eleve_result["ChoiceWeight"]
-    if envie<=0:
-        print(f"{nom_eleve} a {envie} envie")
 
-    envie_attendu = eleve[str(tm)]
-    if envie!=envie_attendu:
-        print(f"{nom_eleve} a {envie_attendu} envie pour {tm}, pas {envie}")
+        assigned = df_result.loc[choices.eq(float(tm_id))]
+        count = len(assigned)
+        tm_duos = df_duo[df_duo["Choix"] == tm_id]
 
-for i_tm,tm in df_tm.iterrows():
-    maximum = int(tm["Nombre maximal travaux"])
-    minimum = tm["Nombre minimal travaux"]
-    eleves = df_result[df_result["Choice"]==i_tm]
-    duos = df_duo[df_duo["Choix"]==i_tm]
-    #print(duos)
-    #duos = duos[duos["Repr"] in eleves.index]
-    n = len(eleves)
-    for _,duo in duos.iterrows():
-        if duo["Repr"] not in eleves.index:
-            continue
-        duo:pd.DataFrame
-        selected = pd.Series(duo["Eleves"]).isin(eleves.index)
-        if selected.all():
-            if i_tm==4:
-                pass
-            n-=len(selected)-1
-        elif not ~selected.all():
-            print(f"Duo inaccuracy: {selected}")
-        
+        for _, duo in tm_duos.iterrows():
+            if duo["Repr"] not in assigned.index:
+                continue
+            members_assigned = pd.Series(duo["Eleves"]).isin(assigned.index)
+            if members_assigned.all():
+                count -= len(members_assigned) - 1
 
-    
-    
-    if n>maximum:
-        print(f"Trop d'élèves pour {i_tm}: {n}>{maximum}")
-    elif not pd.isna(minimum) and n<minimum:
-        if n==0:
-            print(f"(TM non ouvert: {i_tm})")
-        else:
-            print(f"Pas assez d'élèves pour {i_tm}: {n}<{minimum}")
+        if count > maximum:
+            title = tm.get("Titre", "")
+            tm_label = f"TM {tm_id}"
+            if pd.notna(title) and title:
+                tm_label += f" — {title}"
+            problems.append(
+                f"{tm_label} : trop d’élèves ({count} attribués, maximum {int(maximum)})"
+            )
+
+    return problems
+
+
+def main():
+    for problem in verify_repartition(
+        "Annee_28/grid.csv",
+        "Annee_28/liste_sujets.csv",
+        "Annee_28/duo.csv",
+        "r9516.csv",
+    ):
+        print(problem)
+
+
+if __name__ == "__main__":
+    main()
