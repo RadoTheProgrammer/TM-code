@@ -34,3 +34,11 @@ le répertoire de résultats, à côté du `rN.csv` correspondant. Ce rapport in
 l'ordre de mélange des TMs et leurs poids, puis détaille pour chaque TM les
 valeurs `a`, `b`, le calcul des poids des élèves (y compris les binômes), et
 les sélections avec leur ordre et leur raison.
+
+## Générer le graphe des préférences
+
+Exécutez `python create_graph.py` pour créer `grid.dot` à côté du fichier de
+grille configuré dans `settings_data` (`GRID_FILE`). Le fichier DOT contient
+les élèves, les TMs, leurs relations colorées selon l'envie (1 vert, 2 bleu,
+3 rouge), ainsi qu'un noeud spécial pour chaque duo et une légende des
+capacités minimales et maximales de chaque TM.
