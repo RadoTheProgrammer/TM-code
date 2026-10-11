@@ -124,6 +124,7 @@ def generate_single():
         )
         return shuffled_tms
     def select_candidates():
+        global selection_mode
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
         candidats["weights"] = weights**settings_data["PUISSANCE_ELEVE"]
@@ -135,7 +136,8 @@ def generate_single():
             return default_df
         #return candidats2.head(int(maximum-len(§forced)))
         selected = candidats2.sample(n=int(maximum-len(forced)), weights=candidats2["weights"], replace=True)
-        selected = selected.drop_duplicates(keep="first")
+        selected = selected[~selected.index.duplicated(keep="first")]
+        #selected = selected.drop_duplicates(keep="first")
 
         if len(selected)<int(minimum-len(forced)):
 
@@ -254,7 +256,7 @@ def generate_single():
                 sampled_weights = candidats["weights"].copy()
                 sampled_probabilities = sampled_weights / sampled_weights.sum()
                 selected = pd.concat([forced,selected2])
-                selection_mode = f"Forced candidates plus weighted random draw of {n_to_assign}"
+                
             elif n_to_assign==0:
                 selected = forced
                 selection_mode = "Only forced candidates selected: maximum met"
@@ -459,7 +461,7 @@ def generate_puissance_tm(interface_object=None):
                     results = data_framed
                 else:
                     results = pd.concat([results, data_framed], ignore_index=True)
-                results.to_csv(settings_data["OUTPUT_FILE"],index=False)
+                results.to_csv(f"{settings_data['OUTPUT_FILE']}_{puissance_tm}_{puissance_eleve}.csv",index=False)
                 nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
                 nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
                 if interface_object is not None:
@@ -482,5 +484,6 @@ def generate_puissance_tm(interface_object=None):
 
     df = pd.DataFrame(data_params)
     df.to_csv(f"summary-tm.csv",index=False) 
+#generate = generate_puissance_tm
 if __name__ == "__main__":
     generate()
