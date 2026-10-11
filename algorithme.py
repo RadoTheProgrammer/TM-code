@@ -94,6 +94,7 @@ def generate_single():
     problems = {"nonattribue": [], "pasassez": [], "tropnombreux": []}
     TM_non_ouverts = []
     decision_data = {"Id": [], "Choice": [], "ChoiceWeight": []}
+    trace_sections = []
 
     # Parcourir les TMs dans un ordre aléatoire en utilisant le générateur fixe.
     # i_tm: int
@@ -110,7 +111,21 @@ def generate_single():
             df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
         else:
             df_tm["weights"] = 1
-        return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm))]
+        shuffled_indices = numpy_sample(df_tm.index, df_tm["weights"], len(df_tm))
+        shuffled_tms = df_tm.loc[shuffled_indices]
+        tm_trace = df_tm.copy()
+        tm_trace["initial_shuffle_probability"] = tm_trace["weights"] / tm_trace["weights"].sum()
+        tm_trace = tm_trace.rename(columns={"weights": "shuffle_weight"})
+        tm_trace = tm_trace.loc[shuffled_indices].reset_index()
+        tm_trace.insert(0, "shuffle_order", range(1, len(tm_trace) + 1))
+        trace_sections.append(
+            "TM shuffle weights (in actual shuffle order):\n"
+            f"TM weight formula: {'(nproblems_tm.sum(axis=1) + 1) ** PUISSANCE_TM' if TM_WEIGHTS_MODE else '1 (TM weighting disabled)'}\n"
+            "initial_shuffle_probability is the first-draw probability; draws are without replacement, "
+            "so probabilities change after each TM is removed.\n"
+            f"{tm_trace.to_string(index=False)}"
+        )
+        return shuffled_tms
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
@@ -126,6 +141,11 @@ def generate_single():
         if list(selected_index) == ['PERS_0141']:
                 pass
         return candidats.loc[selected_index]
+    student_trace_columns = [
+        "candidate", "student", "duo_members", "a", "b", "a/b",
+        "student_weight", "duo_weight", "candidate_weight", "sampling_weight",
+        "sampling_probability", "isSelected", "selection_order", "reason",
+    ]
     i = 0
     for i_tm,tm in shuffle_tm().iterrows():
         # Colonne du TM courant et masque des candidats ayant une préférence positive.
@@ -152,6 +172,9 @@ def generate_single():
             weights = a/b*(nproblems_eleves[candidats.index]+1)
         else:
             weights = a/b
+        individual_weights = weights.copy()
+        duo_members_by_repr = {}
+        duo_weights_by_repr = {}
         maximum = int(tm["Nombre maximal travaux"])
 
         # Gérer les poids des binômes et garantir que les membres sont affectés ensemble.
@@ -159,6 +182,7 @@ def generate_single():
             eleves = duo["Eleves"]
 
             weights_duo = weights.reindex(eleves,fill_value=0)
+            duo_members_by_repr[duo["Repr"]] = eleves
             if i_tm==2 and eleves==['PERS_0164', 'PERS_0031']:
                 pass
             if 0 in weights_duo.values and np.inf in weights_duo.values:
@@ -173,6 +197,7 @@ def generate_single():
                     duo_weight = 0
             else:
                 duo_weight = weights_duo.product()
+            duo_weights_by_repr[duo["Repr"]] = duo_weight
 
             # Retirer les membres du binôme de la pool d'affectation individuelle.
             weights[weights.index.intersection(eleves)] = 0
@@ -182,21 +207,29 @@ def generate_single():
                 # Attribuer le poids combiné du binôme au représentant.
                 weights[duo["Repr"]] = duo_weight
 
+        candidate_weights = weights.copy()
         n_candidats = len(weights[weights!=0]) 
 
         # Choisir les candidats selon les contraintes minimum/maximum.
         minimum = tm["Nombre minimal travaux"]
         if pd.isna(minimum):
             minimum = 0
+        forced_candidate_ids = set()
+        sampled_weights = pd.Series(dtype=float)
+        sampled_probabilities = pd.Series(dtype=float)
+        selection_mode = ""
         if n_candidats<minimum:
             forced = candidats[weights==np.inf]
+            forced_candidate_ids = set(forced.index)
             if i_tm==16:
                 pass
             if forced.empty:
                 selected = default_df
                 TM_non_ouverts.append(i_tm)
+                selection_mode = "TM not opened: minimum not met and no forced candidates"
             else:
                 selected = forced
+                selection_mode = "Only forced candidates selected: minimum not met"
                 problems["pasassez"].append((i_tm,f"Pas assez : {len(forced)}<{minimum}"))
                 nproblems_tm.loc[i_tm, "pasassez"] = (
                     pd.to_numeric(nproblems_tm.loc[i_tm, "pasassez"], errors="coerce") + 1
@@ -204,6 +237,7 @@ def generate_single():
         elif maximum<n_candidats:
             forced_bool = weights==np.inf
             forced = candidats[forced_bool]
+            forced_candidate_ids = set(forced.index)
             if i_tm==4:
                 pass
             if len(forced):
@@ -214,13 +248,17 @@ def generate_single():
             #print(maximum-len(forced))
             if n_to_assign>=0:
                 selected2 = select_candidates()
+                sampled_weights = candidats["weights"].copy()
+                sampled_probabilities = sampled_weights / sampled_weights.sum()
                 selected = pd.concat([forced,selected2])
+                selection_mode = f"Forced candidates plus weighted random draw of {n_to_assign}"
             else:
                 problems["tropnombreux"].append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
                 weights_tm = nproblems_tm.sum(axis=1)+1
                 prob = weights_tm[i_tm]/np.sum(weights_tm)
                 #print(problems["tropnombreux"][-1],i/len(df_tm),prob)
                 selected = forced
+                selection_mode = "Forced candidates exceed maximum; all forced candidates selected"
                 nproblems_tm.loc[i_tm, "tropnombreux"] = (
                     pd.to_numeric(nproblems_tm.loc[i_tm, "tropnombreux"], errors="coerce") + 1
                 )
@@ -228,15 +266,18 @@ def generate_single():
             if i_tm==4:
                 pass
             selected = candidats[weights!=0]
+            selection_mode = "All candidates with non-zero weight selected (within maximum)"
 
         # Supprimer les éventuels doublons de candidats sélectionnés.
         selected = selected[~selected.index.duplicated(keep="first")]
+        selection_order = {candidate: order for order, candidate in enumerate(selected.index, start=1)}
         if i_tm==2:
             pass
         # Pour chaque candidat, indiquer s'il est sélectionné ou non et mettre à jour la grille.
         repr = duos["Repr"].values
         if 54 in duos["Repr"]:
             pass
+        tm_student_trace = {}
         for nom_eleve_repr,eleve in candidats.iterrows():
             sel_duos = duos[duos["Repr"]==nom_eleve_repr]
             if sel_duos.empty:
@@ -264,6 +305,70 @@ def generate_single():
                     df_grid.at[nom_eleve,str(i_tm)] = choice_weight
                 else:
                     df_grid.at[nom_eleve,str(i_tm)] = np.nan
+                trace_candidate = next(
+                    (
+                        repr_id
+                        for repr_id, members in duo_members_by_repr.items()
+                        if nom_eleve in members
+                    ),
+                    nom_eleve_repr,
+                )
+                student_a = a.get(nom_eleve, np.nan)
+                student_b = b.get(nom_eleve, np.nan)
+                student_is_selected = trace_candidate in selected.index
+                is_forced = trace_candidate in forced_candidate_ids
+                if student_is_selected:
+                    if is_forced:
+                        selection_reason = "Selected as a forced candidate (infinite weight)"
+                    elif trace_candidate in sampled_weights.index:
+                        selection_reason = "Selected by weighted random draw"
+                    else:
+                        selection_reason = selection_mode
+                elif selection_mode.startswith("TM not opened"):
+                    selection_reason = selection_mode
+                elif selection_mode.startswith("Forced candidates exceed"):
+                    selection_reason = "Not selected: forced candidates exceeded the maximum"
+                elif selection_mode.startswith("Only forced"):
+                    selection_reason = "Not selected: only forced candidates could be assigned"
+                elif sampled_weights.size:
+                    if candidate_weights.get(trace_candidate, 0) == 0:
+                        selection_reason = "Not selected: zero effective weight (excluded from weighted draw)"
+                    else:
+                        selection_reason = "Not selected by weighted random draw (capacity limit)"
+                elif candidate_weights.get(trace_candidate, 0) == 0:
+                    selection_reason = "Not selected: zero effective weight"
+                else:
+                    selection_reason = selection_mode
+                tm_student_trace[nom_eleve] = {
+                    "candidate": trace_candidate,
+                    "student": nom_eleve,
+                    "duo_members": " + ".join(duo_members_by_repr.get(trace_candidate, [])),
+                    "a": student_a,
+                    "b": student_b,
+                    "a/b": student_a / student_b if student_b != 0 else np.inf,
+                    "student_weight": individual_weights.get(nom_eleve, 0),
+                    "duo_weight": duo_weights_by_repr.get(trace_candidate, ""),
+                    "candidate_weight": candidate_weights.get(trace_candidate, 0),
+                    "sampling_weight": sampled_weights.get(trace_candidate, ""),
+                    "sampling_probability": sampled_probabilities.get(trace_candidate, ""),
+                    "isSelected": student_is_selected,
+                    "selection_order": selection_order.get(trace_candidate, ""),
+                    "reason": selection_reason,
+                }
+        trace_sections.append(
+            f"\nTM {i_tm} - {tm.get('Maître c', '')} - {tm.get('Langue', '')}\n"
+            f"Selection rule: {selection_mode}; minimum={minimum}, maximum={maximum}, "
+            f"candidates with non-zero weight={n_candidats}, forced={len(forced_candidate_ids)}.\n"
+            "For each student: a = current TM preference; b = sum of remaining TM preferences; "
+            "a/b = base ratio. student_weight is a/b, optionally multiplied by "
+            "(nproblems_eleves[student] + 1) when student weighting is enabled. "
+            "For a duo, duo_weight is the product of member weights and candidate_weight is "
+            "assigned to the representative; sampling_weight is candidate_weight raised to "
+            "PUISSANCE_ELEVE when a weighted draw is used. sampling_probability is the "
+            "initial probability for that draw; selected candidates are sampled without "
+            "replacement, so later probabilities change. selection_order shows assignment order.\n"
+            f"{pd.DataFrame.from_records(list(tm_student_trace.values()), columns=student_trace_columns).to_string(index=False)}"
+        )
         i += 1
     # Construire le DataFrame des décisions à partir des choix collectés.
     df_decision_data = pd.DataFrame(decision_data)
@@ -271,9 +376,14 @@ def generate_single():
         if nom_eleve not in decision_data["Id"]:
             print(f"Nom eleve: {nom_eleve}")
 
+    result_number = 0 if results is None else len(results)
+    trace_path = os.path.join(settings_data["OUTPUT_DIR"], f"r{result_number}.txt")
+    with open(trace_path, "w", encoding="utf-8") as trace_file:
+        trace_file.write("\n\n".join(trace_sections))
+
     if len(df_grid)==len(df_decision_data):
         # Affectation réussie : enregistrer les résultats et mettre à jour les métriques.
-        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{0 if results is None else len(results)}.csv",index=False)
+        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{result_number}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
         std = df_decision_data["ChoiceWeight"].std()
         data["Mean"]=(mean)

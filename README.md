@@ -28,3 +28,9 @@ Le script installe les dépendances de l'application et PyInstaller, puis crée
 `dist\TM-Allocator.exe`. Une connexion Internet est nécessaire pour installer
 les dépendances. Relancez le même script après toute modification du code pour
 reconstruire l'exécutable.
+
+Pour chaque tentative, l'algorithme enregistre aussi un fichier `rN.txt` dans
+le répertoire de résultats, à côté du `rN.csv` correspondant. Ce rapport indique
+l'ordre de mélange des TMs et leurs poids, puis détaille pour chaque TM les
+valeurs `a`, `b`, le calcul des poids des élèves (y compris les binômes), et
+les sélections avec leur ordre et leur raison.
