@@ -78,7 +78,7 @@ def numpy_sample(population, weights, k):
 
 
 def generate_single():
-    global max_l2,best_mean,best_std
+    global max_l2,best_mean,best_std,selection_mode
     
     """Génère une tentative d'attribution pour tous les TMs.
 
@@ -100,7 +100,7 @@ def generate_single():
     #print(nproblems_tm+1)
 
     def shuffle_tm():
-
+        global selection_mode
         # u = np.random.random(len(df_tm))
         # keys = -np.log(u) / (nproblems_tm+1).to_numpy()
 
@@ -131,13 +131,19 @@ def generate_single():
             pass
         candidats2 =candidats.sort_values("weights",ascending=False)
         candidats2 = candidats2[candidats2["weights"]>0]
+        if candidats2.empty:
+            return default_df
         #return candidats2.head(int(maximum-len(§forced)))
-        selected_index = numpy_sample(candidats.index, candidats["weights"],int(maximum-len(forced)))
-        
+        selected = candidats2.sample(n=int(maximum-len(forced)), weights=candidats2["weights"], replace=True)
+        selected = selected.drop_duplicates(keep="first")
 
-        if list(selected_index) == ['PERS_0141']:
-                pass
-        return candidats.loc[selected_index]
+        if len(selected)<int(minimum-len(forced)):
+
+            selected_index = numpy_sample(candidats.index, candidats["weights"],int(minimum-len(forced)))
+            selection_mode = f"Weighted random draw of {int(minimum-len(forced))} candidates (with replacement) to meet minimum"
+            return candidats.loc[selected_index]
+        selection_mode = f"Weighted random draw of {int(maximum-len(forced))} candidates (with replacement) within maximum"
+        return selected
     student_trace_columns = [
         "candidate", "student", "duo_members", "a", "b", "a/b",
         "student_weight", "duo_weight", "candidate_weight", "sampling_weight",
@@ -231,7 +237,7 @@ def generate_single():
                 nproblems_tm.loc[i_tm, "pasassez"] = (
                     pd.to_numeric(nproblems_tm.loc[i_tm, "pasassez"], errors="coerce") + 1
                 )
-        elif maximum<n_candidats:
+        else:
             forced_bool = weights==np.inf
             forced = candidats[forced_bool]
             forced_candidate_ids = set(forced.index)
@@ -243,12 +249,15 @@ def generate_single():
             n_to_assign = maximum-len(forced)
             n_min_to_assign = minimum-len(forced)
             #print(maximum-len(forced))
-            if n_to_assign>=0:
+            if n_to_assign>0:
                 selected2 = select_candidates()
                 sampled_weights = candidats["weights"].copy()
                 sampled_probabilities = sampled_weights / sampled_weights.sum()
                 selected = pd.concat([forced,selected2])
                 selection_mode = f"Forced candidates plus weighted random draw of {n_to_assign}"
+            elif n_to_assign==0:
+                selected = forced
+                selection_mode = "Only forced candidates selected: maximum met"
             else:
                 problems["tropnombreux"].append((i_tm,f"Trop nombreux : {len(forced)}>{maximum}"))
                 weights_tm = nproblems_tm.sum(axis=1)+1
@@ -259,11 +268,7 @@ def generate_single():
                 nproblems_tm.loc[i_tm, "tropnombreux"] = (
                     pd.to_numeric(nproblems_tm.loc[i_tm, "tropnombreux"], errors="coerce") + 1
                 )
-        else:
-            if i_tm==4:
-                pass
-            selected = candidats[weights!=0]
-            selection_mode = "All candidates with non-zero weight selected (within maximum)"
+
 
         # Supprimer les éventuels doublons de candidats sélectionnés.
         selected = selected[~selected.index.duplicated(keep="first")]
@@ -436,8 +441,8 @@ def generate(interface_object=None):
 def generate_puissance_tm(interface_object=None):
     global results
     data_params = {"PUISSANCE_TM": [], "PUISSANCE_ELEVE": [], "Mean": [], "Std": [], "Problems_nonattribue": [], "Problems_pasassez": [], "Problems_tropnombreux": [], "NEnvie1": [], "NEnvie2": [], "NEnvie3": []}
-    for puissance_tm in np.linspace(0,2,10):
-        for puissance_eleve in [10]:
+    for puissance_tm in [1]:
+        for puissance_eleve in np.linspace(1, 20, 20):
             print(f"Puissance TM: {puissance_tm}, Puissance élève: {puissance_eleve}")
             settings_data["PUISSANCE_TM"] = puissance_tm
             settings_data["PUISSANCE_ELEVE"] = puissance_eleve
