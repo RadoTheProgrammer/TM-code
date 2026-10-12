@@ -3,6 +3,7 @@ __pycache__/*
 build*/
 dist/
 r*.csv
+settings.json
 !Donnees_TMs/Annee_1/results/r19560.csv
 !Donnees_TMs/Annee_1/results/r17504.csv
 !Donnees_TMs/Annee_1/results/r16001.csv
