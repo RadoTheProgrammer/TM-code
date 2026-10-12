@@ -470,7 +470,7 @@ class SettingsEditor:
                 f"Une erreur s'est produite lors de l'exécution de l'algorithme:\n{error}",
             )
         self.generating = False
-    def update_progress(self, data_single):
+    def update_progress(self, data_single,temps_moyen):
         def insert_row():
             tree = getattr(self, "results_tree", None)
             if tree is None:
@@ -493,6 +493,7 @@ class SettingsEditor:
         # Generation runs in a worker thread; Tkinter widgets must be updated
         # from the main thread.
         print("HELLO WORLD")
+        self.progress_text.set(f"{len(self.results_tree.get_children())}, {temps_moyen:.02f}/rep")
         self.master.after(0, insert_row)
         
 if __name__ == "__main__":

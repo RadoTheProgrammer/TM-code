@@ -12,6 +12,7 @@ import numpy as np
 import json
 from utils import settings_data
 from tqdm import tqdm
+import time
 # ============================================================================
 # Initialisation des données
 # ============================================================================
@@ -89,6 +90,7 @@ def generate_single():
     """
 
     # Copie de travail de la grille de préférences originale pour cette tentative.
+    tt = time.time()
     df_grid = df_grid_orig.copy()
     
     problems = {"nonattribue": [], "pasassez": [], "tropnombreux": []}
@@ -280,6 +282,7 @@ def generate_single():
         data["Problems_pasassez"]=(len(problems["pasassez"]))
         data["Problems_tropnombreux"]=(len(problems["tropnombreux"]))
         data["TMnonouverts"]=(TM_non_ouverts)
+        data["Temps"]=time.time()-tt
         for n_envie in [1,2,3]:
             
             data[f"NbEnvie{n_envie}"] = (df_decision_data["ChoiceWeight"]==n_envie).mean()
@@ -384,8 +387,9 @@ def generate(interface_object=None):
         results.to_csv(settings_data["OUTPUT_FILE"],index=False)
         nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
         nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
+        temps_moyen = results["Temps"][-25:].mean()
         if interface_object is not None:
-            interface_object.update_progress(data_single)
+            interface_object.update_progress(data_single,temps_moyen)
             if interface_object.stop_requested:
                 print("Arrêt demandé par l'utilisateur.")
                 interface_object.stop_requested=False
