@@ -141,7 +141,7 @@ def generate_single():
         return candidats.loc[selected_index]
     student_trace_columns = [
         "candidate", "student", "duo_members", "a", "b", "a/b",
-        "student_weight", "duo_weight", "candidate_weight", "sampling_weight",
+        "nproblems_eleves", "student_weight", "duo_weight", "candidate_weight", "sampling_weight",
         "sampling_probability", "isSelected", "selection_order", "reason",
     ]
     i = 0
@@ -166,12 +166,14 @@ def generate_single():
 
         # Calculer les poids comme le rapport entre le score du choix courant et
         # les autres scores disponibles.
-        if settings_data["ELEVES_NPROBLEMS_MODE"].startswith("+"):
+        if settings_data["ELEVES_NPROBLEMS_MODE"] is None:
+            weights = a/b
+        elif settings_data["ELEVES_NPROBLEMS_MODE"].startswith("+"):
             weights = a/b+float(settings_data["ELEVES_NPROBLEMS_MODE"][1:])*(nproblems_eleves[candidats.index])
         elif settings_data["ELEVES_NPROBLEMS_MODE"].startswith("*"):
             weights = a/b*(nproblems_eleves[candidats.index]+1)**float(settings_data["ELEVES_NPROBLEMS_MODE"][1:])
         else:
-            weights = a/b
+            raise ValueError(f"Invalid ELEVES_NPROBLEMS_MODE: {settings_data['ELEVES_NPROBLEMS_MODE']}")
         individual_weights = weights.copy()
         duo_members_by_repr = {}
         duo_weights_by_repr = {}
@@ -346,6 +348,7 @@ def generate_single():
                     "a": student_a,
                     "b": student_b,
                     "a/b": student_a / student_b if student_b != 0 else np.inf,
+                    "nproblems_eleves": nproblems_eleves.get(nom_eleve, np.nan),
                     "student_weight": individual_weights.get(nom_eleve, 0),
                     "duo_weight": duo_weights_by_repr.get(trace_candidate, ""),
                     "candidate_weight": candidate_weights.get(trace_candidate, 0),
@@ -496,11 +499,11 @@ def generate_nproblems(interface_object=None):
     global results
     settings_data["OUTPUT_DIR"] = "results-nproblems"
     settings_data["OUTPUT_FILE"] = "results-nproblems/o.csv"
-    for nproblems_eleves_mode in ["*"+str(i) for i in np.linspace(0,5,10)]:
+    for nproblems_eleves_mode in [None,"*0","*1"]:
         settings_data["ELEVES_NPROBLEMS_MODE"] = nproblems_eleves_mode
-        for i_try in tqdm(range(100), desc="Generating data"):
+        for i_try in tqdm(range(20), desc="Generating data"):
             
-            random_seed = len(results) if results is not None else 0
+            random_seed = i_try
             #random_seed = 25731
             #print(f"Essai {i_try} avec random_seed={random_seed}")
             np.random.seed(random_seed)
