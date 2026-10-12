@@ -106,10 +106,8 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
-        if TM_WEIGHTS_MODE:
-            df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
-        else:
-            df_tm["weights"] = 1
+        df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
+
         return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm))]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
@@ -294,18 +292,18 @@ def generate_single():
         print(len(df_decision_data))
 
     return pd.Series(data)
-def generate_puissance_eleve(interface_object=None):
+def generate_puissance_tm(interface_object=None):
     global results
-    data_params = {"PUISSANCE_ELEVE": [], "Mean": [], "Std": [], "Problems_nonattribue": [], "Problems_pasassez": [], "Problems_tropnombreux": [], "NEnvie1": [], "NEnvie2": [], "NEnvie3": []}
-    for puissance_eleve in np.linspace(10,30,5):
-        print(f"Puissance élève: {puissance_eleve}")
-        settings_data["PUISSANCE_ELEVE"] = puissance_eleve
+    data_params = {"PUISSANCE_TM": [], "Mean": [], "Std": [], "Problems_nonattribue": [], "Problems_pasassez": [], "Problems_tropnombreux": [], "NEnvie1": [], "NEnvie2": [], "NEnvie3": []}
+    for puissance_tm in np.linspace(0,2,10):
+        print(f"Puissance TM: {puissance_tm}")
+        settings_data["PUISSANCE_TM"] = puissance_tm
         results = None
-        for i_try in range(100):
+        for i_try in tqdm(range(100)):
             
             random_seed = len(results) if results is not None else 0
             #random_seed = 25731
-            print(f"Essai {i_try} avec random_seed={random_seed}")
+            #print(f"Essai {i_try} avec random_seed={random_seed}")
             np.random.seed(random_seed)
             data_single = generate_single()
             data_framed =  data_single.to_frame().T
@@ -323,7 +321,7 @@ def generate_puissance_eleve(interface_object=None):
                     interface_object.stop_requested=False
                     break
         assert results is not None
-        data_params["PUISSANCE_ELEVE"].append(puissance_eleve)
+        data_params["PUISSANCE_TM"].append(puissance_tm)
         data_params["Mean"].append(results["Mean"].mean())
         data_params["Std"].append(results["Std"].mean())
         data_params["Problems_nonattribue"].append(results["Problems_nonattribue"].mean())
@@ -333,8 +331,8 @@ def generate_puissance_eleve(interface_object=None):
         data_params["NEnvie2"].append(results["NbEnvie2"].mean())
         data_params["NEnvie3"].append(results["NbEnvie3"].mean())  
 
-    df = pd.DataFrame(data_params)
-    df.to_csv(f"{settings_data['OUTPUT_DIR']}/summary.csv",index=False) 
+        df = pd.DataFrame(data_params)
+        df.to_csv(f"{settings_data['OUTPUT_DIR']}/summary.csv",index=False) 
 
 def generate_nproblems(interface_object=None):
     global results
@@ -369,6 +367,30 @@ def generate_nproblems(interface_object=None):
 
     df = pd.DataFrame(data_params)
     df.to_csv(f"summary-tm.csv",index=False) 
-generate = generate_nproblems
+
+def generate(interface_object=None):
+    global results
+
+    while True:
+        
+
+        data_single = generate_single()
+        data_framed =  data_single.to_frame().T
+        
+        if results is None:
+            results = data_framed
+        else:
+            results = pd.concat([results, data_framed], ignore_index=True)
+        results.to_csv(settings_data["OUTPUT_FILE"],index=False)
+        nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
+        nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
+        if interface_object is not None:
+            interface_object.update_progress(data_single)
+            if interface_object.stop_requested:
+                print("Arrêt demandé par l'utilisateur.")
+                interface_object.stop_requested=False
+                break
+
+
 if __name__ == "__main__":
     generate()

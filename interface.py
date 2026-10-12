@@ -179,7 +179,10 @@ class SettingsEditor:
 
         output_file = self.fields.get("OUTPUT_FILE")
         output_path = output_file.get() if output_file else self.original_values.get("OUTPUT_FILE", "")
-        dir_path = self.fields.get("DIR").get()
+        assert self.fields.get("DIR") is not None
+        dir_path = self.fields.get("DIR")
+        assert dir_path is not None
+        dir_path = dir_path.get()
         if dir_path:
             output_path = os.path.join(dir_path, output_path)
         try:
@@ -443,9 +446,13 @@ class SettingsEditor:
             if self.fields.get("DIR") is None:
                 raise ValueError("Le répertoire de travail n'est pas configuré.")
             else:
-                if not os.path.exists(os.path.join(self.fields.get("DIR").get(), self.original_values["GRID_FILE"])):
+                d = self.fields.get("DIR")
+                assert d is not None
+                if not os.path.exists(os.path.join(d.get(), self.original_values["GRID_FILE"])):
+                    self.progress_text.set("Création de la grille ...")
                     import create_grid
                 import algorithme
+                self.progress_text.set("En train de générer")
                 algorithme.generate(self)
         except Exception as error:
             self.master.after(0, self._generation_finished, error)

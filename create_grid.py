@@ -22,6 +22,7 @@ from utils import settings_data
 import pandas as pd
 import numpy as np
 
+warnings = []
 
 
 class DataError(Exception):
@@ -31,7 +32,7 @@ def dataerror(message):
     raise DataError(message)
 
 def datawarning(message):
-    print(f"Warning: {message}")
+    warnings.append(f"Warning: {message}")
 def verify_tm_file(file):
 
 
@@ -72,7 +73,7 @@ def verify_tm_file(file):
         if not languages <= allowed_languages:
             invalid_languages.append((tm_id, original_value))
     if invalid_languages:
-        utils.datawarning(f"TM_FILE contains invalid languages (TM ID, value): {invalid_languages}")
+        datawarning(f"TM_FILE contains invalid languages (TM ID, value): {invalid_languages}")
 
     free_tm = tm_data["Langue"].astype(str).str.strip().str.casefold().eq("libre")
     allowed_igi = {IGI_INDIVIDUEL, IGI_GROUPE, IGI_INDIFFERENT}
@@ -80,7 +81,7 @@ def verify_tm_file(file):
     igi = tm_data[COLUMN_IGI]
     invalid_igi = (~igi.isin(allowed_igi) & igi.notna()) | (igi.isna() & ~free_tm)
     if invalid_igi.any():
-        utils.datawarning(
+        datawarning(
             "TM_FILE contains invalid individual/group values:\n"
             + tm_data.loc[invalid_igi, [COLUMN_IGI, "Langue"]].to_string()
         )
@@ -246,10 +247,7 @@ for nom_eleve,eleve in df.iterrows():
         langue = str(eleve[f"Langue (si choix proposé){indice}"]).strip().casefold()
         langue_tm = df_tm.at[choix,"Langue"]
         if langue not in ("0","nan") and langue not in langue_tm:
-            if choix==35:
-                print(tm_libre.index)
-                pass
-            print(f"Attention: élève {nom_eleve} a choisi le TM {choix} avec langue '{langue}' qui ne correspond pas à la langue du TM '{langue_tm}'")
+            datawarning(f"Attention: élève {nom_eleve} a choisi le TM {choix} avec langue '{langue}' qui ne correspond pas à la langue du TM '{langue_tm}'")
             continue
         igi = df_tm.at[choix,COLUMN_IGI]
         if nom_eleve=="PERS_0001":
@@ -257,13 +255,13 @@ for nom_eleve,eleve in df.iterrows():
 
         if ind_ou_duo=="Individuel":
             if igi==IGI_GROUPE:
-                print(f"TM {choix} est marqué comme groupe mais l'élève {nom_eleve} a indiqué 'Individuel' (choix {nchoix})")
+                datawarning(f"TM {choix} est marqué comme groupe mais l'élève {nom_eleve} a indiqué 'Individuel' (choix {nchoix})")
                 continue
             df_grid.at[nom_eleve,choix] = envie
         else:
             assert ind_ou_duo=="Duo"
             if igi==IGI_INDIVIDUEL:
-                print(f"TM {choix} est marqué comme individuel mais l'élève {nom_eleve} a indiqué 'Duo' (choix {nchoix})")
+                datawarning(f"TM {choix} est marqué comme individuel mais l'élève {nom_eleve} a indiqué 'Duo' (choix {nchoix})")
                 continue
 
             nom_eleve2 = str(eleve[f"Choix {nchoix} en duo avec Nom Prénom (si case cochée précédemment)"])
@@ -272,7 +270,7 @@ for nom_eleve,eleve in df.iterrows():
             eleves = {str(nom_eleve)}
             for nom_eleve2 in nom_eleve2.split(DUO_SEP):
                 if nom_eleve2 not in df.index:
-                    print(f"Nom eleve: {nom_eleve2}")
+                    datawarning(f"Nom eleve: {nom_eleve2}")
                 eleves.add(nom_eleve2)
             if eleves=={"117","280"}:
                 pass
@@ -298,11 +296,11 @@ for nom_eleve,eleve in df.iterrows():
         
 
     if n_tm_libre>1:
-        print(f"Eleve {nom_eleve} a {n_tm_libre} tm libre")
+        datawarning(f"Eleve {nom_eleve} a {n_tm_libre} tm libre")
 n = 0
 for idx,duo in df_duo.iterrows():
     if duo["Eleves"]!=duo["ElevesAccord"]:
-        print(f"Problème duo: {duo}")
+        datawarning(f"Problème duo: {duo}")
         for eleve in duo["Eleves"]:
             if eleve in duo["ElevesAccord"]:
                 df_grid.at[eleve,duo["Choix"]] = np.nan
@@ -310,11 +308,18 @@ for idx,duo in df_duo.iterrows():
                 for nchoix,indice in ((1,""),(2,".1"),(3,".2")):
                     if duo["Choix"]==int(df.at[eleve,f"Choix {nchoix}"][-2:]):
                         if df.at[eleve,f"Individuel ou en duo{indice}"]=="Individuel":
-                            print(f"élève {eleve} a peut-être mal indiqué son partenaire pour le TM {duo['Choix']} choix {nchoix}")
+                            datawarning(f"élève {eleve} a peut-être mal indiqué son partenaire pour le TM {duo['Choix']} choix {nchoix}")
                 df_duo.drop(idx,inplace=True)
 
         n+=1
+
+eleves_sans_choix = df_grid[df_grid.sum(axis=1)==0]
+
+if not eleves_sans_choix.empty:
+    raise utils.DataError(f"L'élève {list(eleves_sans_choix.index)} n'a pas de choix")
 print(f"{n} duos sur {len(df_duo)+n} non accordés")
+with open(settings_data["WARNINGS_FILE"], "w", encoding="utf-8") as warnings_file:
+    warnings_file.write("\n".join(warnings))
 df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
 df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
 df_duo.to_csv(settings_data["DUO_FILE"],index=False)
