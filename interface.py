@@ -190,7 +190,7 @@ class SettingsEditor:
                 reader = csv.DictReader(file)
                 columns = list(reader.fieldnames or [])
                 rows = list(reader)
-                print(rows)
+                
                 pass
         except FileNotFoundError:
             # Generation may not have created the output file yet. Start with
@@ -492,7 +492,7 @@ class SettingsEditor:
 
         # Generation runs in a worker thread; Tkinter widgets must be updated
         # from the main thread.
-        print("HELLO WORLD")
+        
         self.progress_text.set(f"{len(self.results_tree.get_children())}, {temps_moyen:.02f}/rep")
         self.master.after(0, insert_row)
         
