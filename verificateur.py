@@ -25,7 +25,10 @@ def verify_repartition(grid_file, tm_file, duo_file, result_file):
 
     for tm_id, tm in df_tm.iterrows():
         maximum = pd.to_numeric(tm["Nombre maximal travaux"], errors="coerce")
-        if pd.isna(maximum):
+        minimum = tm["Nombre minimal travaux"]
+        if pd.isna(minimum):
+            minimum = 0
+        if pd.isna(maximum) and pd.isna(minimum):
             continue
 
         assigned = df_result.loc[choices.eq(float(tm_id))]
@@ -39,14 +42,24 @@ def verify_repartition(grid_file, tm_file, duo_file, result_file):
             if members_assigned.all():
                 count -= len(members_assigned) - 1
 
-        if count > maximum:
-            title = tm.get("Titre", "")
-            tm_label = f"TM {tm_id}"
-            if pd.notna(title) and title:
-                tm_label += f" — {title}"
+        title = tm.get("Titre", "")
+        tm_label = f"TM {tm_id}"
+        if pd.notna(title) and title:
+            tm_label += f" — {title}"
+
+        if pd.notna(maximum) and count > maximum:
             problems.append(
                 f"{tm_label} : trop d’élèves ({count} attribués, maximum {int(maximum)})"
             )
+        if pd.notna(minimum) and count < minimum:
+            if count == 0:
+                problems.append(
+                    f"({tm_label} non ouvert)"
+                )
+            else:
+                problems.append(
+                    f"{tm_label} : pas assez d’élèves ({count} attribués, minimum {int(minimum)})"
+                )
 
     return problems
 
