@@ -85,7 +85,7 @@ class SettingsEditor:
         self.master.destroy()
     def _load_original_values(self):
         try:
-            with open(os.path.expanduser("~/tm-settings.json"), "r") as f:
+            with open(os.path.expanduser("tm-settings.json"), "r") as f:
                 self.original_values = json.load(f)
         except FileNotFoundError:
             self.original_values = {
@@ -432,7 +432,7 @@ class SettingsEditor:
                     value = int(value)
                 self.original_values[name] = value
 
-            with open(os.path.expanduser("~/tm-settings.json"), "w") as f:
+            with open(os.path.expanduser("tm-settings.json"), "w") as f:
                 json.dump(self.original_values, f, indent=4)
 
             # change text of generate button to "Arrêter"

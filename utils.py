@@ -20,7 +20,7 @@ def func_read_csv_excel(file):
         dataerror(f"Unsupported file format: {file}")
         return pd.read_csv
 
-with open(os.path.expanduser("~/tm-settings.json"), "r") as f:
+with open(os.path.expanduser("tm-settings.json"), "r") as f:
     settings_data = json.load(f)
 
 os.chdir(settings_data["DIR"])

@@ -1,2 +1,0 @@
-formulaire
-triche
