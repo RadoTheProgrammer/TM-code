@@ -37,6 +37,7 @@ def verify_tm_file(file):
 
 
     tm_data = utils.func_read_csv_excel(file)(file)
+    print(tm_data.columns)
     if tm_data.empty or tm_data.columns[0] != "N° TM":
         raise utils.DataError("TM_FILE doit avoir 'N° TM' comme première colonne")
     tm_data = tm_data.set_index("N° TM")
