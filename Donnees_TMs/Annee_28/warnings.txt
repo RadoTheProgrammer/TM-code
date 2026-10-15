@@ -86,7 +86,7 @@ Choix                               11
 ElevesAccord               {PERS_0031}
 Envies                             {1}
 Name: 45, dtype: object
-Warning: Problème duo: Eleves          {PERS_0031, PERS_0155}
+Warning: Problème duo: Eleves          {PERS_0155, PERS_0031}
 Choix                               11
 ElevesAccord               {PERS_0155}
 Envies                             {1}
@@ -108,7 +108,7 @@ ElevesAccord               {PERS_0192}
 Envies                             {1}
 Name: 126, dtype: object
 Warning: élève PERS_0148 a peut-être mal indiqué son partenaire pour le TM 15 choix 2
-Warning: Problème duo: Eleves          {PERS_0031, PERS_0203}
+Warning: Problème duo: Eleves          {PERS_0203, PERS_0031}
 Choix                                2
 ElevesAccord               {PERS_0203}
 Envies                             {1}
