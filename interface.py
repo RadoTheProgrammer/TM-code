@@ -173,6 +173,11 @@ class SettingsEditor:
             text="Défilement automatique vers le bas",
             variable=self.auto_scroll,
         ).pack(anchor="w", padx=6, pady=(6, 0))
+        ttk.Button(
+            self.results_frame,
+            text="Actualiser",
+            command=self._build_results_frame,
+        ).pack(anchor="e", padx=6, pady=(6, 0))
 
         table_frame = ttk.Frame(self.results_frame)
         table_frame.pack(fill="both", expand=True, padx=6, pady=6)
