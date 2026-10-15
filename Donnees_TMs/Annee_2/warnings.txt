@@ -1,0 +1,22 @@
+Warning: TM 32 est marqué comme groupe mais l'élève 11 a indiqué 'Individuel' (choix 3)
+Warning: TM 32 est marqué comme groupe mais l'élève 28 a indiqué 'Individuel' (choix 2)
+Warning: TM 32 est marqué comme groupe mais l'élève 55 a indiqué 'Individuel' (choix 1)
+Warning: Attention: élève 61 a choisi le TM 18 avec langue 'anglais' qui ne correspond pas à la langue du TM '['allemand']'
+Warning: Attention: élève 62 a choisi le TM 20 avec langue 'allemand' qui ne correspond pas à la langue du TM '['français']'
+Warning: Attention: élève 62 a choisi le TM 16 avec langue 'allemand' qui ne correspond pas à la langue du TM '['français']'
+Warning: Attention: élève 66 a choisi le TM 15 avec langue 'allemand' qui ne correspond pas à la langue du TM '['anglais', 'français']'
+Warning: TM 3 est marqué comme groupe mais l'élève 78 a indiqué 'Individuel' (choix 3)
+Warning: Attention: élève 153 a choisi le TM 19 avec langue 'anglais' qui ne correspond pas à la langue du TM '['français']'
+Warning: TM 28 est marqué comme groupe mais l'élève 168 a indiqué 'Individuel' (choix 1)
+Warning: Attention: élève 173 a choisi le TM 18 avec langue 'français' qui ne correspond pas à la langue du TM '['allemand']'
+Warning: Attention: élève 177 a choisi le TM 18 avec langue 'français' qui ne correspond pas à la langue du TM '['allemand']'
+Warning: Eleve 187 a 2 tm libre
+Warning: TM 32 est marqué comme groupe mais l'élève 189 a indiqué 'Individuel' (choix 3)
+Warning: TM 32 est marqué comme groupe mais l'élève 197 a indiqué 'Individuel' (choix 1)
+Warning: TM 27 est marqué comme groupe mais l'élève 197 a indiqué 'Individuel' (choix 3)
+Warning: TM 27 est marqué comme groupe mais l'élève 198 a indiqué 'Individuel' (choix 1)
+Warning: TM 32 est marqué comme groupe mais l'élève 205 a indiqué 'Individuel' (choix 3)
+Warning: TM 32 est marqué comme groupe mais l'élève 207 a indiqué 'Individuel' (choix 3)
+Warning: Attention: élève 210 a choisi le TM 19 avec langue 'anglais' qui ne correspond pas à la langue du TM '['français']'
+Warning: Attention: élève 218 a choisi le TM 18 avec langue 'français' qui ne correspond pas à la langue du TM '['allemand']'
+Warning: Attention: élève 222 a choisi le TM 15 avec langue 'allemand' qui ne correspond pas à la langue du TM '['anglais', 'français']'
