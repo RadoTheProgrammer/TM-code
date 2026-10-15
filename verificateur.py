@@ -66,10 +66,10 @@ def verify_repartition(grid_file, tm_file, duo_file, result_file):
 
 def main():
     for problem in verify_repartition(
-        "Annee_28/grid.csv",
-        "Annee_28/liste_sujets.csv",
-        "Annee_28/duo.csv",
-        "r9516.csv",
+        "Donnees_TMs/Annee_28/grid.csv",
+        "Donnees_TMs/Annee_28/liste_sujets.csv",
+        "Donnees_TMs/Annee_28/duo.csv",
+        r"Donnees_TMs\Annee_28\meilleur-r9516.csv",
     ):
         print(problem)
 

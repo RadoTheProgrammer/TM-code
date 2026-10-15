@@ -1,0 +1,3 @@
+Warning: TM 23 est marqué comme groupe mais l'élève 24 a indiqué 'Individuel' (choix 3)
+Warning: TM 29 est marqué comme groupe mais l'élève 74 a indiqué 'Individuel' (choix 1)
+Warning: TM 23 est marqué comme groupe mais l'élève 188 a indiqué 'Individuel' (choix 1)
