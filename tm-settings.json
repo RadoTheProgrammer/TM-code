@@ -3,15 +3,13 @@
     "GRID_FILE": "grid.csv",
     "OUTPUT_DIR": "results",
     "OUTPUT_FILE": "results/o.csv",
-    "TM_FILE": "liste_sujets.csv",
+    "TM_FILE": "C:/Users/rrrad/OneDrive - Education Vaud/Documents/TM/TM28_Sujets.xlsx",
     "DUO_FILE": "duo.csv",
-    "NPROBLEMS_ELEVES_FILE": "nproblems_eleves2.csv",
-    "NPROBLEMS_TM_FILE": "nproblems_tm_df2.csv",
-    "ELEVES_FILE": "voeux_eleves.csv",
+    "NPROBLEMS_ELEVES_FILE": "nproblems_eleves.csv",
+    "NPROBLEMS_TM_FILE": "nproblems_tm_df.csv",
+    "ELEVES_FILE": "C:/Users/rrrad/OneDrive - Education Vaud/Documents/TM/TM28_Inscription_e\u0301le\u0300ves_anonyme.xlsx",
     "N_TRIES": 10000,
-    "RANDOM_SEED": 3,
-    "PUISSANCE_ELEVE": 20.0,
-    "PUISSANCE_TM": 2.0,
-    "ELEVES_NPROBLEMS_MODE": null,
-    "WARNINGS_FILE": "warnings.txt"
+    "RANDOM_SEED": 67,
+    "PUISSANCE_ELEVES": 1.0,
+    "PUISSANCE_TM": 1.0
 }

@@ -131,7 +131,7 @@ class SettingsEditor:
 
             #row.pack(fill="x",pady=0)
 
-            label = ttk.Label(row, text=settings_description.get(name, name), width=32, anchor="w")
+            label = ttk.Label(row, text=settings_description.get(name, name), width=50,anchor="w")
             label.grid(row=0, column=0, sticky="w")
 
             var = tk.StringVar(value=str(value))

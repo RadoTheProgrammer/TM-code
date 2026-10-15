@@ -5,7 +5,7 @@ a = Analysis(
     ['interface.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('tm-settings.json', '.')],
     hiddenimports=['create_grid'],
     hookspath=[],
     hooksconfig={},

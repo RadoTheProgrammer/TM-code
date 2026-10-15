@@ -11,7 +11,6 @@ import shutil
 import numpy as np
 import json
 from utils import settings_data
-
 import time
 # ============================================================================
 # Initialisation des données
@@ -35,7 +34,7 @@ else:
 default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
 
 # Charger les travaux de maturité et supprimer le dernier (TM libre)
-df_tm = pd.read_csv(settings_data["TM_FILE"], index_col=0)
+df_tm = utils.func_read_csv_excel(settings_data["TM_FILE"])(settings_data["TM_FILE"], index_col=0)
 #df_tm.index = df_tm.index.astype(str)
 df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs libres
 
