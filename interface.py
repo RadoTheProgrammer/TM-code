@@ -100,8 +100,10 @@ class SettingsEditor:
     "ELEVES_FILE": "",
     "N_TRIES": 10000,
     "RANDOM_SEED": 67,
-    "PUISSANCE_ELEVES": 1.0,
-    "PUISSANCE_TM": 1.0
+    "PUISSANCE_ELEVE": 20.0,
+    "PUISSANCE_TM": 2.0,
+    "ELEVES_NPROBLEMS_MODE": None,
+    "WARNINGS_FILE": "warnings.txt"
 }
 
     def _is_file_setting(self, name, value):
