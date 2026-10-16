@@ -294,7 +294,7 @@ class SettingsEditor:
         problems_frame.rowconfigure(0, weight=1)
         problems_frame.columnconfigure(0, weight=1)
 
-        problems_text = tk.Text(problems_frame, height=5, wrap="word")
+        problems_text = tk.Text(problems_frame, height=10, wrap="word")
         problems_scrollbar = ttk.Scrollbar(
             problems_frame, orient="vertical", command=problems_text.yview
         )

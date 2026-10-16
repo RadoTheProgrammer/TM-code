@@ -276,16 +276,16 @@ def generate_single():
         df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{0 if results is None else len(results)}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
         std = df_decision_data["ChoiceWeight"].std()
-        data["Mean"]=(mean)
-        data["Std"]=(std)
+        data["Mean"]=round((mean),2)
+        data["Std"]=round(std,2)
         data["Problems_nonattribue"]=(len(problems["nonattribue"]))
         data["Problems_pasassez"]=(len(problems["pasassez"]))
         data["Problems_tropnombreux"]=(len(problems["tropnombreux"]))
         data["TMnonouverts"]=(TM_non_ouverts)
-        data["Temps"]=time.time()-tt
+        data["Temps"]=round(time.time()-tt,2)
         for n_envie in [1,2,3]:
             
-            data[f"NbEnvie{n_envie}"] = (df_decision_data["ChoiceWeight"]==n_envie).mean()
+            data[f"NbEnvie{n_envie}"] = round((df_decision_data["ChoiceWeight"]==n_envie).mean(),2)
         #print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
@@ -295,81 +295,7 @@ def generate_single():
         print(len(df_decision_data))
 
     return pd.Series(data)
-def generate_puissance_tm(interface_object=None):
-    global results
-    data_params = {"PUISSANCE_TM": [], "Mean": [], "Std": [], "Problems_nonattribue": [], "Problems_pasassez": [], "Problems_tropnombreux": [], "NEnvie1": [], "NEnvie2": [], "NEnvie3": []}
-    for puissance_tm in np.linspace(0,2,10):
-        print(f"Puissance TM: {puissance_tm}")
-        settings_data["PUISSANCE_TM"] = puissance_tm
-        results = None
-        for i_try in tqdm(range(100)):
-            
-            random_seed = len(results) if results is not None else 0
-            #random_seed = 25731
-            #print(f"Essai {i_try} avec random_seed={random_seed}")
-            np.random.seed(random_seed)
-            data_single = generate_single()
-            data_framed =  data_single.to_frame().T
-            if results is None:
-                results = data_framed
-            else:
-                results = pd.concat([results, data_framed], ignore_index=True)
-            results.to_csv(settings_data["OUTPUT_FILE"],index=False)
-            nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
-            nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
-            if interface_object is not None:
-                interface_object.update_progress(data_single)
-                if interface_object.stop_requested:
-                    print("Arrêt demandé par l'utilisateur.")
-                    interface_object.stop_requested=False
-                    break
-        assert results is not None
-        data_params["PUISSANCE_TM"].append(puissance_tm)
-        data_params["Mean"].append(results["Mean"].mean())
-        data_params["Std"].append(results["Std"].mean())
-        data_params["Problems_nonattribue"].append(results["Problems_nonattribue"].mean())
-        data_params["Problems_pasassez"].append(results["Problems_pasassez"].mean())
-        data_params["Problems_tropnombreux"].append(results["Problems_tropnombreux"].mean())
-        data_params["NEnvie1"].append(results["NbEnvie1"].mean())
-        data_params["NEnvie2"].append(results["NbEnvie2"].mean())
-        data_params["NEnvie3"].append(results["NbEnvie3"].mean())  
 
-        df = pd.DataFrame(data_params)
-        df.to_csv(f"{settings_data['OUTPUT_DIR']}/summary.csv",index=False) 
-
-def generate_nproblems(interface_object=None):
-    global results
-    settings_data["OUTPUT_DIR"] = "results-nproblems"
-    settings_data["OUTPUT_FILE"] = "results-nproblems/o.csv"
-    for nproblems_eleves_mode in [None,"*0","*1"]:
-        settings_data["ELEVES_NPROBLEMS_MODE"] = nproblems_eleves_mode
-        for i_try in tqdm(range(20), desc="Generating data"):
-            
-            random_seed = i_try
-            #random_seed = 25731
-            #print(f"Essai {i_try} avec random_seed={random_seed}")
-            np.random.seed(random_seed)
-            data_single = generate_single()
-            data_single["ELEVES_NPROBLEMS_MODE"] = nproblems_eleves_mode
-            data_framed =  data_single.to_frame().T
-            
-            if results is None:
-                results = data_framed
-            else:
-                results = pd.concat([results, data_framed], ignore_index=True)
-            results.to_csv(settings_data["OUTPUT_FILE"],index=False)
-            nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
-            nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
-            if interface_object is not None:
-                interface_object.update_progress(data_single)
-                if interface_object.stop_requested:
-                    print("Arrêt demandé par l'utilisateur.")
-                    interface_object.stop_requested=False
-                    break
-        assert results is not None
-
-    df = pd.DataFrame(data_params)
-    df.to_csv(f"summary-tm.csv",index=False) 
 
 def generate(interface_object=None):
     global results
