@@ -14,5 +14,8 @@
     "PUISSANCE_ELEVE": 20.0,
     "PUISSANCE_TM": 2.0,
     "ELEVES_NPROBLEMS_MODE": null,
-    "WARNINGS_FILE": "warnings.txt"
+    "WARNINGS_FILE": "warnings.txt",
+    "TOLERANCE_IGI_GROUPE":true,
+    "TOLERANCE_IGI_IND":true,
+    "TOLERANCE_LANGUE":true
 }

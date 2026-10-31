@@ -2,6 +2,7 @@ import pandas as pd
 
 
 def verify_repartition(grid_file, tm_file, duo_file, result_file):
+    
     df_grid = pd.read_csv(grid_file, index_col=0)
     df_grid.index = df_grid.index.astype(str)
 
@@ -22,6 +23,24 @@ def verify_repartition(grid_file, tm_file, duo_file, result_file):
         for student in df_grid.index
         if student not in assigned_students
     ]
+
+    for student in df_grid.index:
+        if student not in df_result.index:
+            continue
+        choice = choices.loc[student]
+        if pd.isna(choice) or choice == 0:
+            continue
+
+        tm_column = str(int(choice)) if choice.is_integer() else str(choice)
+        selected = (
+            df_grid.at[student, tm_column]
+            if tm_column in df_grid.columns
+            else None
+        )
+        if pd.isna(selected) or str(selected).strip() in ("", "0"):
+            problems.append(
+                f"Élève {student} : attribué au TM {tm_column}, qu’il n’a pas choisi"
+            )
 
     for tm_id, tm in df_tm.iterrows():
         maximum = pd.to_numeric(tm["Nombre maximal travaux"], errors="coerce")

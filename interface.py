@@ -11,6 +11,9 @@ settings_description = {
     "TM_FILE": "Fichier CSV contenant les travaux de maturité.",
     "ELEVES_FILE": "Fichier CSV contenant les voeux des élèves.",
     "DIR": "Répertoire de travail pour les fichiers d'entrée et de sortie.",
+    "TOLERANCE_IGI_IND": "Tolérer les incompatibilités IGI individuelles.",
+    "TOLERANCE_IGI_GROUPE": "Tolérer les incompatibilités IGI de groupe.",
+    "TOLERANCE_LANGUE": "Tolérer les incompatibilités de langue.",
 }
 
 class SettingsEditor:
@@ -92,7 +95,15 @@ class SettingsEditor:
         while self.stop_requested:
             self.master.update()
     def _build_form(self):
-        for name in ("TM_FILE","ELEVES_FILE","DIR"):
+        
+        for name in (
+            "TM_FILE",
+            "ELEVES_FILE",
+            "DIR",
+            "TOLERANCE_IGI_IND",
+            "TOLERANCE_IGI_GROUPE",
+            "TOLERANCE_LANGUE",
+        ):
             value = utils.settings_data[name]
             # row = tk.Frame(
             #     self.form_frame,
@@ -111,19 +122,32 @@ class SettingsEditor:
             label = ttk.Label(row, text=settings_description.get(name, name), width=50,anchor="w")
             label.grid(row=0, column=0, sticky="w")
 
-            var = tk.StringVar(value=str(value))
-            entry = ttk.Entry(row, textvariable=var)
+            if name.startswith("TOLERANCE_"):
+                var = tk.BooleanVar(value=bool(value))
+                ttk.Checkbutton(row, variable=var).grid(
+                    row=0, column=1, sticky="w", padx=(8, 0)
+                )
+            else:
+                var = tk.StringVar(value=str(value))
+                entry = ttk.Entry(row, textvariable=var)
 
-            if name in ("TM_FILE", "ELEVES_FILE"):
-                button = ttk.Button(row, text="Parcourir", command=lambda n=name, v=var: self.choose_file(n, v))
-                button.grid(row=0, column=2, padx=(6, 0))
+                if name in ("TM_FILE", "ELEVES_FILE"):
+                    button = ttk.Button(
+                        row,
+                        text="Parcourir",
+                        command=lambda n=name, v=var: self.choose_file(n, v),
+                    )
+                    button.grid(row=0, column=2, padx=(6, 0))
 
-            if name=="DIR":
-                # Add a button to open the directory in the file explorer
-                button = ttk.Button(row, text="Parcourir", command=lambda v=var: self.choose_directory(v))
-                button.grid(row=0, column=2, padx=(6, 0))
-            entry.grid(row=0, column=1, sticky="ew", padx=(8, 0))
-            row.columnconfigure(1, weight=1)
+                if name == "DIR":
+                    button = ttk.Button(
+                        row,
+                        text="Parcourir",
+                        command=lambda v=var: self.choose_directory(v),
+                    )
+                    button.grid(row=0, column=2, padx=(6, 0))
+                entry.grid(row=0, column=1, sticky="ew", padx=(8, 0))
+                row.columnconfigure(1, weight=1)
             self.fields[name] = var
 
     def choose_directory(self, variable):
@@ -404,11 +428,11 @@ class SettingsEditor:
             self.generating = True
             for name, var in self.fields.items():
                 value = var.get()
-                if value.isdigit():
+                if isinstance(value,str) and value.isdigit():
                     value = int(value)
                 utils.settings_data[name] = value
 
-
+            print(utils.settings_data)
 
             # change text of generate button to "Arrêter"
             self.generate_button.configure(text="Arrêter")
@@ -426,6 +450,9 @@ class SettingsEditor:
                 if not os.path.exists(utils.gf_setting("GRID_FILE")):
                     self.progress_text.set("Création de la grille ...")
                     import create_grid
+                    create_grid.create_grid()
+
+                print("HELLO")
                 import algorithme
                 self.progress_text.set("En train de générer")
                 algorithme.generate(self)
