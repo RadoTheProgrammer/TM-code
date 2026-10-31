@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 
 import json
-
+import utils
 
 settings_description = {
     "TM_FILE": "Fichier CSV contenant les travaux de maturité.",
@@ -24,7 +24,6 @@ class SettingsEditor:
         self.fields = {}
         self.generating = False
         self.stop_requested = False
-        self._load_original_values()
 
         main = ttk.Frame(master, padding=12)
         main.pack(fill="both", expand=True)
@@ -83,28 +82,6 @@ class SettingsEditor:
     def close(self):
         self.stop_generating()
         self.master.destroy()
-    def _load_original_values(self):
-        try:
-            with open(os.path.expanduser("tm-settings.json"), "r") as f:
-                self.original_values = json.load(f)
-        except FileNotFoundError:
-            self.original_values = {
-    "DIR": "",
-    "GRID_FILE": "grid.csv",
-    "OUTPUT_DIR": "results",
-    "OUTPUT_FILE": "results/o.csv",
-    "TM_FILE": "",
-    "DUO_FILE": "duo.csv",
-    "NPROBLEMS_ELEVES_FILE": "nproblems_eleves.csv",
-    "NPROBLEMS_TM_FILE": "nproblems_tm_df.csv",
-    "ELEVES_FILE": "",
-    "N_TRIES": 10000,
-    "RANDOM_SEED": 67,
-    "PUISSANCE_ELEVE": 20.0,
-    "PUISSANCE_TM": 2.0,
-    "ELEVES_NPROBLEMS_MODE": None,
-    "WARNINGS_FILE": "warnings.txt"
-}
 
     def _is_file_setting(self, name, value):
         if name.endswith("_FILE") or name.endswith("_DIR"):
@@ -116,7 +93,7 @@ class SettingsEditor:
             self.master.update()
     def _build_form(self):
         for name in ("TM_FILE","ELEVES_FILE","DIR"):
-            value = self.original_values[name]
+            value = utils.settings_data[name]
             # row = tk.Frame(
             #     self.form_frame,
             #     bg="red",
@@ -184,14 +161,8 @@ class SettingsEditor:
         table_frame.rowconfigure(0, weight=1)
         table_frame.columnconfigure(0, weight=1)
 
-        output_file = self.fields.get("OUTPUT_FILE")
-        output_path = output_file.get() if output_file else self.original_values.get("OUTPUT_FILE", "")
-        assert self.fields.get("DIR") is not None
-        dir_path = self.fields.get("DIR")
-        assert dir_path is not None
-        dir_path = dir_path.get()
-        if dir_path:
-            output_path = os.path.join(dir_path, output_path)
+        output_path = utils.gf_setting("OUTPUT_FILE")
+
         try:
             with open(output_path, "r", newline="", encoding="utf-8-sig") as file:
                 reader = csv.DictReader(file)
@@ -250,7 +221,7 @@ class SettingsEditor:
         index = tree.set(item, "NRep")
         try:
             details_path = os.path.join(
-                self._configured_path("OUTPUT_DIR", "results"),
+                utils.gf_setting("OUTPUT_DIR"),
                 f"r{index}.csv",
             )
             with open(details_path, "r", newline="", encoding="utf-8-sig") as file:
@@ -437,8 +408,7 @@ class SettingsEditor:
                     value = int(value)
                 self.original_values[name] = value
 
-            with open(os.path.expanduser("tm-settings.json"), "w") as f:
-                json.dump(self.original_values, f, indent=4)
+
 
             # change text of generate button to "Arrêter"
             self.generate_button.configure(text="Arrêter")
