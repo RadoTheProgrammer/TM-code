@@ -211,7 +211,6 @@ class SettingsEditor:
             ).pack(anchor="w")
             return
 
-        columns = ["Index", *columns]
         tree = ttk.Treeview(table_frame, columns=columns, show="headings")
         vertical_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
         horizontal_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=tree.xview)
@@ -226,7 +225,7 @@ class SettingsEditor:
             tree.insert(
                 "",
                 "end",
-                values=[index, *[row.get(column, "") for column in columns[1:]]],
+                values=[*[row.get(column, "") for column in columns]],
             )
 
         # Put the results table in the upper-left cell of the layout.  ``nsew``
@@ -248,8 +247,7 @@ class SettingsEditor:
         item = tree.identify_row(event.y)
         if not item:
             return
-        index = tree.set(item, "Index")
-        index = tree.set(item, "Index")
+        index = tree.set(item, "NRep")
         try:
             details_path = os.path.join(
                 self._configured_path("OUTPUT_DIR", "results"),

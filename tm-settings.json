@@ -3,6 +3,7 @@
     "GRID_FILE": "grid.csv",
     "OUTPUT_DIR": "results",
     "OUTPUT_FILE": "results/o.csv",
+    "NREP_FILE": "results/nrep.txt",
     "TM_FILE": "liste_sujets.csv",
     "DUO_FILE": "duo.csv",
     "NPROBLEMS_ELEVES_FILE": "nproblems_eleves2.csv",

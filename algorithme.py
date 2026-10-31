@@ -64,6 +64,11 @@ if os.path.exists(settings_data["OUTPUT_FILE"]):
 else:
     results = None
 
+if os.path.exists(settings_data["NREP_FILE"]):
+    with open(settings_data["NREP_FILE"]) as f:
+        nrep = int(f.read())
+else:
+    nrep = 0
 def numpy_sample(population, weights, k):
     """
     Échantillonne k éléments de la population en utilisant les poids donnés.
@@ -273,11 +278,12 @@ def generate_single():
 
     if len(df_grid)==len(df_decision_data):
         # Affectation réussie : enregistrer les résultats et mettre à jour les métriques.
-        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{0 if results is None else len(results)}.csv",index=False)
+        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{nrep}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
         std = df_decision_data["ChoiceWeight"].std()
-        data["Mean"]=round((mean),2)
-        data["Std"]=round(std,2)
+        data["NRep"]=nrep
+        data["Mean"]=round((mean),3)
+        data["Std"]=round(std,3)
         data["Problems_nonattribue"]=(len(problems["nonattribue"]))
         data["Problems_pasassez"]=(len(problems["pasassez"]))
         data["Problems_tropnombreux"]=(len(problems["tropnombreux"]))
@@ -285,7 +291,7 @@ def generate_single():
         data["Temps"]=round(time.time()-tt,2)
         for n_envie in [1,2,3]:
             
-            data[f"NbEnvie{n_envie}"] = round((df_decision_data["ChoiceWeight"]==n_envie).mean(),2)
+            data[f"NbEnvie{n_envie}"] = round((df_decision_data["ChoiceWeight"]==n_envie).mean(),3)
         #print(f"Try {i_try}: mean={mean}, std={std}, non ouverts={TM_non_ouverts}, non attribués={len(problems['nonattribue'])}, pas assez={len(problems['pasassez'])}, trop nombreux={len(problems['tropnombreux'])}")
 
     else:
@@ -298,18 +304,23 @@ def generate_single():
 
 
 def generate(interface_object=None):
-    global results
+    global results,nrep
 
     while True:
         
 
         data_single = generate_single()
+        
+
         data_framed =  data_single.to_frame().T
         
         if results is None:
             results = data_framed
         else:
             results = pd.concat([results, data_framed], ignore_index=True)
+        nrep += 1
+        with open(settings_data["NREP_FILE"],"w") as f:
+            f.write(str(nrep))
         results.to_csv(settings_data["OUTPUT_FILE"],index=False)
         nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
         nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
@@ -321,6 +332,7 @@ def generate(interface_object=None):
                 interface_object.stop_requested=False
                 break
 
+        
 
 if __name__ == "__main__":
     generate()
