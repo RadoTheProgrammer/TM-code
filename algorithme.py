@@ -10,7 +10,6 @@ import pandas as pd
 import shutil
 import numpy as np
 import json
-from utils import settings_data
 import utils
 import time
 # ============================================================================
@@ -22,12 +21,12 @@ ELEVES_WEIGHTS_MODE = False  # Mode de calcul des poids pour les élèves
 
 data = {}
 
-if settings_data["RANDOM_SEED"] is not None:
-    np.random.seed(settings_data["RANDOM_SEED"])
-df_grid_orig = pd.read_csv(settings_data["GRID_FILE"], index_col=0)  # Charger la grille originale
+if utils.gf_setting("RANDOM_SEED") is not None:
+    np.random.seed(utils.gf_setting("RANDOM_SEED"))
+df_grid_orig = pd.read_csv(utils.gf_setting("GRID_FILE"), index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
-if os.path.exists(settings_data["NPROBLEMS_ELEVES_FILE"]):
-    nproblems_eleves = pd.read_csv(settings_data["NPROBLEMS_ELEVES_FILE"], index_col=0).iloc[:,0]
+if os.path.exists(utils.gf_setting("NPROBLEMS_ELEVES_FILE")):
+    nproblems_eleves = pd.read_csv(utils.gf_setting("NPROBLEMS_ELEVES_FILE"), index_col=0).iloc[:,0]
     nproblems_eleves.index = nproblems_eleves.index.astype(str)
 else:
     nproblems_eleves = pd.Series(0.0, index=df_grid_orig.index)  # Initialiser le compteur de problèmes pour chaque élève
@@ -35,37 +34,37 @@ else:
 default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
 
 # Charger les travaux de maturité et supprimer le dernier (TM libre)
-df_tm = utils.func_read_csv_excel(settings_data["TM_FILE"])(settings_data["TM_FILE"], index_col=0)
+df_tm = utils.func_read_csv_excel(utils.gf_setting("TM_FILE"))(utils.gf_setting("TM_FILE"), index_col=0)
 #df_tm.index = df_tm.index.astype(str)
 df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs libres
 
 
-if os.path.exists(settings_data["NPROBLEMS_TM_FILE"]):
-    nproblems_tm = pd.read_csv(settings_data["NPROBLEMS_TM_FILE"], index_col=0)
+if os.path.exists(utils.gf_setting("NPROBLEMS_TM_FILE")):
+    nproblems_tm = pd.read_csv(utils.gf_setting("NPROBLEMS_TM_FILE"), index_col=0)
 
 else:
     nproblems_tm = pd.DataFrame(0.0, index=df_tm.index, columns=["tropnombreux","pasassez"])
 # Charger les binômes et traiter les données
-df_duo = pd.read_csv(settings_data["DUO_FILE"])
+df_duo = pd.read_csv(utils.gf_setting("DUO_FILE"))
 df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")  # Séparer les élèves en liste
 df_duo["Repr"] = df_duo["Eleves"].str[0]  # Représentant = premier élève du binôme
 
 # Initialiser les résultats
 
 # Créer ou nettoyer le répertoire de résultats
-if os.path.exists(settings_data["OUTPUT_DIR"]):
-    i_try = len(os.listdir(settings_data["OUTPUT_DIR"]))-1
+if os.path.exists(utils.gf_setting("OUTPUT_DIR")):
+    i_try = len(os.listdir(utils.gf_setting("OUTPUT_DIR")))-1
     
 else:
     i_try = 0
-    os.mkdir(settings_data["OUTPUT_DIR"])
-if os.path.exists(settings_data["OUTPUT_FILE"]):
-    results = pd.read_csv(settings_data["OUTPUT_FILE"])
+    os.mkdir(utils.gf_setting("OUTPUT_DIR"))
+if os.path.exists(utils.gf_setting("OUTPUT_FILE")):
+    results = pd.read_csv(utils.gf_setting("OUTPUT_FILE"))
 else:
     results = None
 
-if os.path.exists(settings_data["NREP_FILE"]):
-    with open(settings_data["NREP_FILE"]) as f:
+if os.path.exists(utils.gf_setting("NREP_FILE")):
+    with open(utils.gf_setting("NREP_FILE")) as f:
         nrep = int(f.read())
 else:
     nrep = 0
@@ -113,13 +112,13 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
-        df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**settings_data["PUISSANCE_TM"]
+        df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**utils.gf_setting("PUISSANCE_TM")
 
         return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm))]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
-        candidats["weights"] = weights**settings_data["PUISSANCE_ELEVE"]
+        candidats["weights"] = weights**utils.gf_setting("PUISSANCE_ELEVE")
         if i_tm==20:
             pass
         candidats2 =candidats.sort_values("weights",ascending=False)
@@ -278,7 +277,7 @@ def generate_single():
 
     if len(df_grid)==len(df_decision_data):
         # Affectation réussie : enregistrer les résultats et mettre à jour les métriques.
-        df_decision_data.to_csv(f"{settings_data['OUTPUT_DIR']}/r{nrep}.csv",index=False)
+        df_decision_data.to_csv(f"{utils.gf_setting('OUTPUT_DIR')}/r{nrep}.csv",index=False)
         mean = df_decision_data["ChoiceWeight"].mean()
         std = df_decision_data["ChoiceWeight"].std()
         data["NRep"]=nrep
@@ -319,11 +318,11 @@ def generate(interface_object=None):
         else:
             results = pd.concat([results, data_framed], ignore_index=True)
         nrep += 1
-        with open(settings_data["NREP_FILE"],"w") as f:
+        with open(utils.gf_setting("NREP_FILE"),"w") as f:
             f.write(str(nrep))
-        results.to_csv(settings_data["OUTPUT_FILE"],index=False)
-        nproblems_eleves.to_csv(settings_data["NPROBLEMS_ELEVES_FILE"])
-        nproblems_tm.to_csv(settings_data["NPROBLEMS_TM_FILE"])
+        results.to_csv(utils.gf_setting("OUTPUT_FILE"),index=False)
+        nproblems_eleves.to_csv(utils.gf_setting("NPROBLEMS_ELEVES_FILE"))
+        nproblems_tm.to_csv(utils.gf_setting("NPROBLEMS_TM_FILE"))
         temps_moyen = results["Temps"][-25:].mean()
         if interface_object is not None:
             interface_object.update_progress(data_single,temps_moyen)

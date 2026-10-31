@@ -47,7 +47,9 @@ def gf_setting(key):
 
     return format_setting(value)
 def format_setting(value):
-    return value.format(**settings_data).format(**settings_data)
+    if isinstance(value, str):
+        return value.format(**settings_data).format(**settings_data)
+    return value
 def save_settings():
     with open(os.path.expanduser("tm-settings.json"), "w") as f:
         json.dump(settings_data, f, indent=4)

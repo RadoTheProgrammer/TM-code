@@ -18,7 +18,6 @@ import json
 import os
 import time
 import utils
-from utils import settings_data
 import pandas as pd
 import numpy as np
 
@@ -209,8 +208,8 @@ def verify_eleves_file(file, tm_data):
 
     return student_data
 
-df_tm = verify_tm_file(settings_data["TM_FILE"])
-df = verify_eleves_file(settings_data["ELEVES_FILE"], df_tm)
+df_tm = verify_tm_file(utils.gf_setting("TM_FILE"))
+df = verify_eleves_file(utils.gf_setting("ELEVES_FILE"), df_tm)
 
 n_tm = len(df_tm)
 tm_libre = df_tm[df_tm["Langue"]=="libre"]
@@ -319,10 +318,10 @@ eleves_sans_choix = df_grid[df_grid.sum(axis=1)==0]
 if not eleves_sans_choix.empty:
     raise utils.DataError(f"L'élève {list(eleves_sans_choix.index)} n'a pas de choix")
 print(f"{n} duos sur {len(df_duo)+n} non accordés")
-with open(settings_data["WARNINGS_FILE"], "w", encoding="utf-8") as warnings_file:
+with open(utils.gf_setting("WARNINGS_FILE"), "w", encoding="utf-8") as warnings_file:
     warnings_file.write("\n".join(warnings))
 df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
 df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
-df_duo.to_csv(settings_data["DUO_FILE"],index=False)
+df_duo.to_csv(utils.gf_setting("DUO_FILE"),index=False)
 
-df_grid.to_csv(settings_data["GRID_FILE"])
+df_grid.to_csv(utils.gf_setting("GRID_FILE"))
