@@ -406,7 +406,7 @@ class SettingsEditor:
                 value = var.get()
                 if value.isdigit():
                     value = int(value)
-                self.original_values[name] = value
+                utils.settings_data[name] = value
 
 
 
@@ -423,7 +423,7 @@ class SettingsEditor:
             else:
                 d = self.fields.get("DIR")
                 assert d is not None
-                if not os.path.exists(os.path.join(d.get(), self.original_values["GRID_FILE"])):
+                if not os.path.exists(utils.gf_setting("GRID_FILE")):
                     self.progress_text.set("Création de la grille ...")
                     import create_grid
                 import algorithme
@@ -460,7 +460,7 @@ class SettingsEditor:
             tree.insert(
                 "",
                 "end",
-                values=[index, *[data_single.get(column, "") for column in columns[1:]]],
+                values=[*[data_single.get(column, "") for column in columns]],
             )
             if self.auto_scroll.get():
                 tree.yview_moveto(1.0)
@@ -468,7 +468,7 @@ class SettingsEditor:
         # Generation runs in a worker thread; Tkinter widgets must be updated
         # from the main thread.
         
-        self.progress_text.set(f"{len(self.results_tree.get_children())}, {temps_moyen:.02f}/rep")
+        self.progress_text.set(f"{data_single["NRep"]}, {temps_moyen:.02f}/rep")
         self.master.after(0, insert_row)
         
 if __name__ == "__main__":

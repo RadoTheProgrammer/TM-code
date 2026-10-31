@@ -326,7 +326,9 @@ def generate(interface_object=None):
             results = data_framed
         else:
             results = pd.concat([results, data_framed], ignore_index=True)
+        
         nrep += 1
+        print(nrep)
         with open(utils.gf_setting("NREP_FILE"),"w") as f:
             f.write(str(nrep))
         results.to_csv(utils.gf_setting("OUTPUT_FILE"),index=False)
