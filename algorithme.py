@@ -21,8 +21,11 @@ ELEVES_WEIGHTS_MODE = False  # Mode de calcul des poids pour les élèves
 
 data = {}
 
-if utils.gf_setting("RANDOM_SEED") is not None:
-    np.random.seed(utils.gf_setting("RANDOM_SEED"))
+random_seed = utils.gf_setting("RANDOM_SEED")
+if random_seed is not None:
+    if not isinstance(random_seed, int):
+        raise TypeError("RANDOM_SEED must be an integer or None")
+    np.random.seed(random_seed)
 df_grid_orig = pd.read_csv(utils.gf_setting("GRID_FILE"), index_col=0)  # Charger la grille originale
 df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
 if os.path.exists(utils.gf_setting("NPROBLEMS_ELEVES_FILE")):
@@ -112,13 +115,19 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
-        df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**utils.gf_setting("PUISSANCE_TM")
+        puissance_tm = utils.gf_setting("PUISSANCE_TM")
+        if not isinstance(puissance_tm, (int, float)):
+            raise TypeError("PUISSANCE_TM must be numeric")
+        df_tm["weights"] = (nproblems_tm.sum(axis=1)+1)**puissance_tm
 
         return df_tm.loc[numpy_sample(df_tm.index, df_tm["weights"], len(df_tm))]
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
-        candidats["weights"] = weights**utils.gf_setting("PUISSANCE_ELEVE")
+        puissance_eleve = utils.gf_setting("PUISSANCE_ELEVE")
+        if not isinstance(puissance_eleve, (int, float)):
+            raise TypeError("PUISSANCE_ELEVE must be numeric")
+        candidats["weights"] = weights**puissance_eleve
         if i_tm==20:
             pass
         candidats2 =candidats.sort_values("weights",ascending=False)

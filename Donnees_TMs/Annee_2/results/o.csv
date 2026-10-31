@@ -1,4 +1,4 @@
-Unnamed: 0,Mean,Std,Problems_nonattribue,Problems_pasassez,Problems_tropnombreux,TMnonouverts,NbEnvie1,NbEnvie2,NbEnvie3,Temps,Old
+NRep,Mean,Std,Problems_nonattribue,Problems_pasassez,Problems_tropnombreux,TMnonouverts,NbEnvie1,NbEnvie2,NbEnvie3,Temps,Old
 0,2.31,0.77,2.0,2.0,2.0,"[14, 17, 5, 29]",0.16,0.34,0.49,,1
 1,2.32,0.73,3.0,1.0,1.0,"[14, 5]",0.12,0.4,0.47,,1
 2,2.32,0.78,3.0,3.0,1.0,"[5, 14, 17]",0.15,0.33,0.5,,1

@@ -240,9 +240,9 @@ class SettingsEditor:
             from verificateur import verify_repartition
 
             problems = verify_repartition(
-                self._configured_path("GRID_FILE", "grid.csv"),
-                self._configured_path("TM_FILE", ""),
-                self._configured_path("DUO_FILE", "duo.csv"),
+                utils.gf_setting("GRID_FILE"),
+                utils.gf_setting("TM_FILE"),
+                utils.gf_setting("DUO_FILE"),
                 details_path,
             )
         except (OSError, csv.Error, ValueError, KeyError) as error:

@@ -1,0 +1,115 @@
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0006 a indiqué 'Individuel' (choix 2)
+Warning: TM 13 est marqué comme individuel mais l'élève PERS_0011 a indiqué 'Duo' (choix 1)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0012 a indiqué 'Individuel' (choix 2)
+Warning: TM 8 est marqué comme groupe mais l'élève PERS_0013 a indiqué 'Individuel' (choix 2)
+Warning: TM 18 est marqué comme groupe mais l'élève PERS_0013 a indiqué 'Individuel' (choix 3)
+Warning: TM 13 est marqué comme individuel mais l'élève PERS_0014 a indiqué 'Duo' (choix 3)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0017 a indiqué 'Individuel' (choix 3)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0020 a indiqué 'Individuel' (choix 2)
+Warning: TM 2 est marqué comme groupe mais l'élève PERS_0028 a indiqué 'Individuel' (choix 2)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0028 a indiqué 'Individuel' (choix 3)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0036 a indiqué 'Individuel' (choix 2)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0037 a indiqué 'Individuel' (choix 1)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0037 a indiqué 'Individuel' (choix 3)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0046 a indiqué 'Individuel' (choix 1)
+Warning: TM 2 est marqué comme groupe mais l'élève PERS_0046 a indiqué 'Individuel' (choix 2)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0048 a indiqué 'Individuel' (choix 1)
+Warning: TM 2 est marqué comme groupe mais l'élève PERS_0048 a indiqué 'Individuel' (choix 2)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0049 a indiqué 'Individuel' (choix 3)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0054 a indiqué 'Individuel' (choix 2)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0057 a indiqué 'Individuel' (choix 3)
+Warning: TM 13 est marqué comme individuel mais l'élève PERS_0062 a indiqué 'Duo' (choix 1)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0065 a indiqué 'Individuel' (choix 1)
+Warning: TM 14 est marqué comme individuel mais l'élève PERS_0068 a indiqué 'Duo' (choix 2)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0070 a indiqué 'Individuel' (choix 2)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0070 a indiqué 'Individuel' (choix 3)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0076 a indiqué 'Individuel' (choix 2)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0076 a indiqué 'Individuel' (choix 3)
+Warning: TM 18 est marqué comme groupe mais l'élève PERS_0077 a indiqué 'Individuel' (choix 1)
+Warning: TM 14 est marqué comme individuel mais l'élève PERS_0079 a indiqué 'Duo' (choix 2)
+Warning: TM 8 est marqué comme groupe mais l'élève PERS_0082 a indiqué 'Individuel' (choix 1)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0086 a indiqué 'Individuel' (choix 2)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0093 a indiqué 'Individuel' (choix 3)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0094 a indiqué 'Individuel' (choix 1)
+Warning: TM 14 est marqué comme individuel mais l'élève PERS_0095 a indiqué 'Duo' (choix 3)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0099 a indiqué 'Individuel' (choix 2)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0104 a indiqué 'Individuel' (choix 3)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0106 a indiqué 'Individuel' (choix 2)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0106 a indiqué 'Individuel' (choix 3)
+Warning: TM 13 est marqué comme individuel mais l'élève PERS_0107 a indiqué 'Duo' (choix 3)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0112 a indiqué 'Individuel' (choix 2)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0116 a indiqué 'Individuel' (choix 3)
+Warning: TM 28 est marqué comme groupe mais l'élève PERS_0117 a indiqué 'Individuel' (choix 2)
+Warning: Attention: élève PERS_0125 a choisi le TM 4 avec langue 'anglais' qui ne correspond pas à la langue du TM '['français']'
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0126 a indiqué 'Individuel' (choix 1)
+Warning: TM 2 est marqué comme groupe mais l'élève PERS_0126 a indiqué 'Individuel' (choix 3)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0129 a indiqué 'Individuel' (choix 2)
+Warning: TM 18 est marqué comme groupe mais l'élève PERS_0135 a indiqué 'Individuel' (choix 3)
+Warning: TM 28 est marqué comme groupe mais l'élève PERS_0136 a indiqué 'Individuel' (choix 3)
+Warning: TM 8 est marqué comme groupe mais l'élève PERS_0138 a indiqué 'Individuel' (choix 1)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0140 a indiqué 'Individuel' (choix 2)
+Warning: TM 14 est marqué comme individuel mais l'élève PERS_0145 a indiqué 'Duo' (choix 2)
+Warning: TM 13 est marqué comme individuel mais l'élève PERS_0149 a indiqué 'Duo' (choix 2)
+Warning: TM 14 est marqué comme individuel mais l'élève PERS_0150 a indiqué 'Duo' (choix 1)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0150 a indiqué 'Individuel' (choix 2)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0151 a indiqué 'Individuel' (choix 3)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0154 a indiqué 'Individuel' (choix 2)
+Warning: TM 18 est marqué comme groupe mais l'élève PERS_0155 a indiqué 'Individuel' (choix 1)
+Warning: TM 28 est marqué comme groupe mais l'élève PERS_0156 a indiqué 'Individuel' (choix 2)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0157 a indiqué 'Individuel' (choix 3)
+Warning: Attention: élève PERS_0159 a choisi le TM 4 avec langue 'anglais' qui ne correspond pas à la langue du TM '['français']'
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0168 a indiqué 'Individuel' (choix 1)
+Warning: TM 28 est marqué comme groupe mais l'élève PERS_0173 a indiqué 'Individuel' (choix 3)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0186 a indiqué 'Individuel' (choix 1)
+Warning: TM 13 est marqué comme individuel mais l'élève PERS_0190 a indiqué 'Duo' (choix 1)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0192 a indiqué 'Individuel' (choix 2)
+Warning: TM 8 est marqué comme groupe mais l'élève PERS_0195 a indiqué 'Individuel' (choix 2)
+Warning: TM 2 est marqué comme groupe mais l'élève PERS_0198 a indiqué 'Individuel' (choix 2)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0199 a indiqué 'Individuel' (choix 2)
+Warning: TM 14 est marqué comme individuel mais l'élève PERS_0202 a indiqué 'Duo' (choix 1)
+Warning: TM 18 est marqué comme groupe mais l'élève PERS_0202 a indiqué 'Individuel' (choix 3)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0207 a indiqué 'Individuel' (choix 3)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0208 a indiqué 'Individuel' (choix 2)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0211 a indiqué 'Individuel' (choix 2)
+Warning: TM 11 est marqué comme groupe mais l'élève PERS_0212 a indiqué 'Individuel' (choix 3)
+Warning: TM 26 est marqué comme groupe mais l'élève PERS_0216 a indiqué 'Individuel' (choix 1)
+Warning: TM 2 est marqué comme groupe mais l'élève PERS_0216 a indiqué 'Individuel' (choix 2)
+Warning: TM 34 est marqué comme groupe mais l'élève PERS_0219 a indiqué 'Individuel' (choix 1)
+Warning: TM 28 est marqué comme groupe mais l'élève PERS_0223 a indiqué 'Individuel' (choix 1)
+Warning: Problème duo: Eleves          {PERS_0164, PERS_0031}
+Choix                                2
+ElevesAccord               {PERS_0031}
+Envies                             {2}
+Name: 44, dtype: object
+Warning: Problème duo: Eleves          {PERS_0164, PERS_0031}
+Choix                               11
+ElevesAccord               {PERS_0031}
+Envies                             {1}
+Name: 45, dtype: object
+Warning: Problème duo: Eleves          {PERS_0155, PERS_0031}
+Choix                               11
+ElevesAccord               {PERS_0155}
+Envies                             {1}
+Name: 111, dtype: object
+Warning: Problème duo: Eleves          {PERS_0164, PERS_0179}
+Choix                                2
+ElevesAccord               {PERS_0179}
+Envies                             {2}
+Name: 124, dtype: object
+Warning: Problème duo: Eleves          {PERS_0164, PERS_0179}
+Choix                                4
+ElevesAccord               {PERS_0179}
+Envies                             {1}
+Name: 125, dtype: object
+Warning: élève PERS_0164 a peut-être mal indiqué son partenaire pour le TM 4 choix 3
+Warning: Problème duo: Eleves          {PERS_0148, PERS_0192}
+Choix                               15
+ElevesAccord               {PERS_0192}
+Envies                             {1}
+Name: 126, dtype: object
+Warning: élève PERS_0148 a peut-être mal indiqué son partenaire pour le TM 15 choix 2
+Warning: Problème duo: Eleves          {PERS_0031, PERS_0203}
+Choix                                2
+ElevesAccord               {PERS_0203}
+Envies                             {1}
+Name: 132, dtype: object

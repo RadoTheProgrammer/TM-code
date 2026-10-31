@@ -245,7 +245,7 @@ for nom_eleve,eleve in df.iterrows():
             continue
         ind_ou_duo = eleve[f"Individuel ou en duo{indice}"]
         langue = str(eleve[f"Langue (si choix proposé){indice}"]).strip().casefold()
-        langue_tm = df_tm.at[choix,"Langue"]
+        langue_tm = str(df_tm.at[choix,"Langue"])
         if langue not in ("0","nan") and langue not in langue_tm:
             datawarning(f"Attention: élève {nom_eleve} a choisi le TM {choix} avec langue '{langue}' qui ne correspond pas à la langue du TM '{langue_tm}'")
             continue
@@ -286,7 +286,12 @@ for nom_eleve,eleve in df.iterrows():
                 duo["Envies"].add(envie)
 
             else:
-                df_duo.loc[len(df_duo)]=[eleves,choix,{nom_eleve},{envie}]
+                duo_row = pd.Series(
+                    [eleves, choix, {nom_eleve}, {envie}],
+                    index=df_duo.columns,
+                    dtype=object,
+                )
+                df_duo.loc[len(df_duo)] = duo_row
             df_grid.at[nom_eleve,choix] = envie
 
 
@@ -306,7 +311,7 @@ for idx,duo in df_duo.iterrows():
                 df_grid.at[eleve,duo["Choix"]] = np.nan
             else:
                 for nchoix,indice in ((1,""),(2,".1"),(3,".2")):
-                    if duo["Choix"]==int(df.at[eleve,f"Choix {nchoix}"][-2:]):
+                    if duo["Choix"]==int(str(df.at[eleve,f"Choix {nchoix}"])[-2:]):
                         if df.at[eleve,f"Individuel ou en duo{indice}"]=="Individuel":
                             datawarning(f"élève {eleve} a peut-être mal indiqué son partenaire pour le TM {duo['Choix']} choix {nchoix}")
                 df_duo.drop(idx,inplace=True)
