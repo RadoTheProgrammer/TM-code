@@ -70,7 +70,6 @@ class SettingsEditor:
 
         self._build_form()
         self._build_results_frame()
-        self.create_grid()
 
         actions = ttk.Frame(main)
         actions.pack(side="bottom", fill="x", pady=(12, 0))
@@ -468,6 +467,8 @@ class SettingsEditor:
             if isinstance(value,str) and value.isdigit():
                 value = int(value)
             utils.settings_data[name] = value
+
+        utils.save_settings()
     def _run_generation(self):
         try:
             if self.fields.get("DIR") is None:

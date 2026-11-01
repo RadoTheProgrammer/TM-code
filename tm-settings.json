@@ -5,18 +5,18 @@
     "OUTPUT_DIR": "{DIR}/results",
     "OUTPUT_FILE": "{DIR}/results/o.csv",
     "NREP_FILE": "{OUTPUT_DIR}/nrep.txt",
-    "TM_FILE": "{DIR}/liste_sujets.csv",
+    "TM_FILE": "C:/Users/rrrad/OneDrive - Education Vaud/Documents/TM/TM-code/Donnees_TMs/liste_sujets28.xlsx",
     "DUO_FILE": "{DIR}/duo.csv",
     "NPROBLEMS_ELEVES_FILE": "{DIR}/nproblems_eleves2.csv",
     "NPROBLEMS_TM_FILE": "{DIR}/nproblems_tm_df2.csv",
-    "ELEVES_FILE": "{DIR}/voeux_eleves.csv",
+    "ELEVES_FILE": "C:/Users/rrrad/OneDrive - Education Vaud/Documents/TM/TM-code/Donnees_TMs/voeux_eleves28.xlsx",
     "N_TRIES": 10000,
     "RANDOM_SEED": 3,
     "PUISSANCE_ELEVE": 20.0,
     "PUISSANCE_TM": 2.0,
     "ELEVES_NPROBLEMS_MODE": null,
     "WARNINGS_FILE": "{DIR}/warnings.txt",
-    "TOLERANCE_IGI_GROUPE":true,
-    "TOLERANCE_IGI_IND":true,
-    "TOLERANCE_LANGUE":true
+    "TOLERANCE_IGI_GROUPE": true,
+    "TOLERANCE_IGI_IND": true,
+    "TOLERANCE_LANGUE": true
 }

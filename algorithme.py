@@ -19,57 +19,58 @@ TM_WEIGHTS_MODE = False  # Mode de calcul des poids pour les TMs
 ELEVES_WEIGHTS_MODE = False  # Mode de calcul des poids pour les élèves
 
 
-data = {}
+def setup():
+    global data, df_grid_orig, nproblems_eleves, default_df, df_tm
+    global nproblems_tm, df_duo, i_try, results, nrep
 
-random_seed = utils.gf_setting("RANDOM_SEED")
-if random_seed is not None:
-    if not isinstance(random_seed, int):
-        raise TypeError("RANDOM_SEED must be an integer or None")
-    np.random.seed(random_seed)
+    data = {}
+    random_seed = utils.gf_setting("RANDOM_SEED")
+    if random_seed is not None:
+        if not isinstance(random_seed, int):
+            raise TypeError("RANDOM_SEED must be an integer or None")
+        np.random.seed(random_seed)
 
-if os.path.exists(utils.gf_setting("NPROBLEMS_ELEVES_FILE")):
-    nproblems_eleves = pd.read_csv(utils.gf_setting("NPROBLEMS_ELEVES_FILE"), index_col=0).iloc[:,0]
-    nproblems_eleves.index = nproblems_eleves.index.astype(str)
-else:
-    nproblems_eleves = pd.Series(0.0, index=df_grid_orig.index)  # Initialiser le compteur de problèmes pour chaque élève
+    df_grid_orig = pd.read_csv(utils.gf_setting("GRID_FILE"), index_col=0)
+    df_grid_orig.index = df_grid_orig.index.astype(str)
+    if os.path.exists(utils.gf_setting("NPROBLEMS_ELEVES_FILE")):
+        nproblems_eleves = pd.read_csv(utils.gf_setting("NPROBLEMS_ELEVES_FILE"), index_col=0).iloc[:, 0]
+        nproblems_eleves.index = nproblems_eleves.index.astype(str)
+    else:
+        nproblems_eleves = pd.Series(0.0, index=df_grid_orig.index)
 
-default_df = pd.DataFrame()  # DataFrame vide pour les cas d'erreur
+    default_df = pd.DataFrame()
+    df_tm = utils.func_read_csv_excel(utils.gf_setting("TM_FILE"))(utils.gf_setting("TM_FILE"), index_col=0)
+    df_tm = df_tm.drop(df_tm[df_tm["Langue"] == "Libre"].index)
 
-# Charger les travaux de maturité et supprimer le dernier (TM libre)
-df_tm = utils.func_read_csv_excel(utils.gf_setting("TM_FILE"))(utils.gf_setting("TM_FILE"), index_col=0)
-#df_tm.index = df_tm.index.astype(str)
-df_tm = df_tm.drop(df_tm[df_tm["Langue"]=="Libre"].index)  # Enlever les TMs libres
+    if os.path.exists(utils.gf_setting("NPROBLEMS_TM_FILE")):
+        nproblems_tm = pd.read_csv(utils.gf_setting("NPROBLEMS_TM_FILE"), index_col=0)
+    else:
+        nproblems_tm = pd.DataFrame(0.0, index=df_tm.index, columns=["tropnombreux", "pasassez"])
+
+    df_duo = pd.read_csv(utils.gf_setting("DUO_FILE"))
+    df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")
+    df_duo["Repr"] = df_duo["Eleves"].str[0]
+
+    if os.path.exists(utils.gf_setting("OUTPUT_DIR")):
+        i_try = len(os.listdir(utils.gf_setting("OUTPUT_DIR"))) - 1
+    else:
+        i_try = 0
+        os.mkdir(utils.gf_setting("OUTPUT_DIR"))
+    if os.path.exists(utils.gf_setting("OUTPUT_FILE")):
+        results = pd.read_csv(utils.gf_setting("OUTPUT_FILE"))
+    else:
+        results = None
+
+    if os.path.exists(utils.gf_setting("NREP_FILE")):
+        with open(utils.gf_setting("NREP_FILE")) as f:
+            nrep = int(f.read())
+    else:
+        nrep = 0
 
 
-if os.path.exists(utils.gf_setting("NPROBLEMS_TM_FILE")):
-    nproblems_tm = pd.read_csv(utils.gf_setting("NPROBLEMS_TM_FILE"), index_col=0)
+setup()
 
-else:
-    nproblems_tm = pd.DataFrame(0.0, index=df_tm.index, columns=["tropnombreux","pasassez"])
-# Charger les binômes et traiter les données
-df_duo = pd.read_csv(utils.gf_setting("DUO_FILE"))
-df_duo["Eleves"] = df_duo["Eleves"].str.split(r" \+ ")  # Séparer les élèves en liste
-df_duo["Repr"] = df_duo["Eleves"].str[0]  # Représentant = premier élève du binôme
 
-# Initialiser les résultats
-
-# Créer ou nettoyer le répertoire de résultats
-if os.path.exists(utils.gf_setting("OUTPUT_DIR")):
-    i_try = len(os.listdir(utils.gf_setting("OUTPUT_DIR")))-1
-    
-else:
-    i_try = 0
-    os.mkdir(utils.gf_setting("OUTPUT_DIR"))
-if os.path.exists(utils.gf_setting("OUTPUT_FILE")):
-    results = pd.read_csv(utils.gf_setting("OUTPUT_FILE"))
-else:
-    results = None
-
-if os.path.exists(utils.gf_setting("NREP_FILE")):
-    with open(utils.gf_setting("NREP_FILE")) as f:
-        nrep = int(f.read())
-else:
-    nrep = 0
 def numpy_sample(population, weights, k):
     """
     Échantillonne k éléments de la population en utilisant les poids donnés.
@@ -313,8 +314,8 @@ def generate_single():
 def generate(interface_object=None):
     global results,nrep,df_grid_orig
 
-    df_grid_orig = pd.read_csv(utils.gf_setting("GRID_FILE"), index_col=0)  # Charger la grille originale
-    df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
+    setup()
+    
     while True:
         
 
