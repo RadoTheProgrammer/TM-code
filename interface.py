@@ -529,8 +529,8 @@ class SettingsEditor:
                 return
 
             columns = tree["columns"]
-            if len(columns) == 1:
-                columns = ["Index", *data_single.keys()]
+            if len(columns) == 0:
+                columns = [*data_single.keys()]
                 tree.configure(columns=columns)
                 self._configure_sortable_tree(tree, columns)
             index = len(tree.get_children())
