@@ -2,8 +2,13 @@ import json
 
 import pandas as pd
 import os
+from platformdirs import user_data_path
+
 class DataError(Exception):
     pass
+udp = user_data_path("repartiteur-de-tm")
+os.makedirs(udp, exist_ok=True)
+settings_file = os.path.join(udp, "tm-settings.json")
 
 def dataerror(message):
     """Lève une erreur de données avec le message fourni."""
@@ -24,7 +29,7 @@ def func_read_csv_excel(file):
         return pd.read_csv
     
 try:
-    with open(os.path.expanduser("tm-settings.json"), "r") as f:
+    with open(settings_file, "r") as f:
         settings_data = json.load(f)
 except FileNotFoundError:
     settings_data = {"DIR": "Donnees_TMs/Annee_28",
@@ -61,5 +66,5 @@ def format_setting(value):
     return value
 def save_settings():
     """Enregistre les param?tres courants dans le fichier JSON."""
-    with open(os.path.expanduser("tm-settings.json"), "w") as f:
+    with open(settings_file, "w") as f:
         json.dump(settings_data, f, indent=4)
