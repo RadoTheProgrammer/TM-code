@@ -4,6 +4,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 
+import create_grid
 import json
 import utils
 
@@ -69,6 +70,7 @@ class SettingsEditor:
 
         self._build_form()
         self._build_results_frame()
+        self.create_grid()
 
         actions = ttk.Frame(main)
         actions.pack(side="bottom", fill="x", pady=(12, 0))
@@ -238,6 +240,8 @@ class SettingsEditor:
         tree.bind("<Double-1>", self.show_result_details)
 
     def show_result_details(self, event):
+        self.update_settings()
+        self.create_grid()
         tree = event.widget
         item = tree.identify_row(event.y)
         if not item:
@@ -416,6 +420,26 @@ class SettingsEditor:
         if filename:
             variable.set(filename)
 
+    def create_grid(self):
+        grid_params_file = utils.gf_setting("GRID_PARAMS_FILE")
+        grid_params_keys = ("TOLERANCE_IGI_GROUPE", "TOLERANCE_IGI_IND", "TOLERANCE_LANGUE")
+        try:
+            with open(grid_params_file) as f:
+                grid_params = json.load(f)
+        except FileNotFoundError:
+            grid_params = None
+            pass
+        new_grid_params = {}
+        for name in grid_params_keys:
+            value = utils.settings_data.get(name)
+            new_grid_params[name] = value
+
+        
+        if grid_params is None or grid_params != new_grid_params:
+            print("GRID CREATION")
+            create_grid.create_grid()
+            with open(grid_params_file, "w") as f:
+                json.dump(new_grid_params, f)
     def generate(self):
         if self.generating:
             self.progress_text.set("Arrêt de la génération ...")
@@ -426,11 +450,9 @@ class SettingsEditor:
         else:
             self.stop_requested = False
             self.generating = True
-            for name, var in self.fields.items():
-                value = var.get()
-                if isinstance(value,str) and value.isdigit():
-                    value = int(value)
-                utils.settings_data[name] = value
+
+            self.update_settings()
+            self.create_grid()
 
             print(utils.settings_data)
 
@@ -440,6 +462,12 @@ class SettingsEditor:
             self.progress_text.set("Démarrage de la génération ...")
             threading.Thread(target=self._run_generation, daemon=True).start()
 
+    def update_settings(self):
+        for name, var in self.fields.items():
+            value = var.get()
+            if isinstance(value,str) and value.isdigit():
+                value = int(value)
+            utils.settings_data[name] = value
     def _run_generation(self):
         try:
             if self.fields.get("DIR") is None:

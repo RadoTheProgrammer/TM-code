@@ -330,3 +330,6 @@ def create_grid():
     df_duo.to_csv(utils.gf_setting("DUO_FILE"),index=False)
 
     df_grid.to_csv(utils.gf_setting("GRID_FILE"))
+
+if __name__ == "__main__":
+    create_grid()

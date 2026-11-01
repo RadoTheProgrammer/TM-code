@@ -26,8 +26,7 @@ if random_seed is not None:
     if not isinstance(random_seed, int):
         raise TypeError("RANDOM_SEED must be an integer or None")
     np.random.seed(random_seed)
-df_grid_orig = pd.read_csv(utils.gf_setting("GRID_FILE"), index_col=0)  # Charger la grille originale
-df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
+
 if os.path.exists(utils.gf_setting("NPROBLEMS_ELEVES_FILE")):
     nproblems_eleves = pd.read_csv(utils.gf_setting("NPROBLEMS_ELEVES_FILE"), index_col=0).iloc[:,0]
     nproblems_eleves.index = nproblems_eleves.index.astype(str)
@@ -312,8 +311,10 @@ def generate_single():
 
 
 def generate(interface_object=None):
-    global results,nrep
+    global results,nrep,df_grid_orig
 
+    df_grid_orig = pd.read_csv(utils.gf_setting("GRID_FILE"), index_col=0)  # Charger la grille originale
+    df_grid_orig.index = df_grid_orig.index.astype(str)  # Convertir les indices en chaînes
     while True:
         
 

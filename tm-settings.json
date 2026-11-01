@@ -1,6 +1,7 @@
 {
     "DIR": "Donnees_TMs/Annee_28",
     "GRID_FILE": "{DIR}/grid.csv",
+    "GRID_PARAMS_FILE": "{DIR}/grid_params.json",
     "OUTPUT_DIR": "{DIR}/results",
     "OUTPUT_FILE": "{DIR}/results/o.csv",
     "NREP_FILE": "{OUTPUT_DIR}/nrep.txt",
@@ -14,7 +15,7 @@
     "PUISSANCE_ELEVE": 20.0,
     "PUISSANCE_TM": 2.0,
     "ELEVES_NPROBLEMS_MODE": null,
-    "WARNINGS_FILE": "warnings.txt",
+    "WARNINGS_FILE": "{DIR}/warnings.txt",
     "TOLERANCE_IGI_GROUPE":true,
     "TOLERANCE_IGI_IND":true,
     "TOLERANCE_LANGUE":true

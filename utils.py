@@ -24,22 +24,27 @@ try:
     with open(os.path.expanduser("tm-settings.json"), "r") as f:
         settings_data = json.load(f)
 except FileNotFoundError:
-    settings_data = {"DIR": "",
+    settings_data = {"DIR": "Donnees_TMs/Annee_28",
     "GRID_FILE": "{DIR}/grid.csv",
+    "GRID_PARAMS_FILE": "{DIR}/grid_params.json",
     "OUTPUT_DIR": "{DIR}/results",
     "OUTPUT_FILE": "{DIR}/results/o.csv",
-    "TM_FILE": "",
+    "NREP_FILE": "{OUTPUT_DIR}/nrep.txt",
+    "TM_FILE": "{DIR}/liste_sujets.csv",
     "DUO_FILE": "{DIR}/duo.csv",
-    "NPROBLEMS_ELEVES_FILE": "{DIR}/nproblems_eleves.csv",
-    "NPROBLEMS_TM_FILE": "{DIR}/nproblems_tm_df.csv",
-    "ELEVES_FILE": "",
+    "NPROBLEMS_ELEVES_FILE": "{DIR}/nproblems_eleves2.csv",
+    "NPROBLEMS_TM_FILE": "{DIR}/nproblems_tm_df2.csv",
+    "ELEVES_FILE": "{DIR}/voeux_eleves.csv",
     "N_TRIES": 10000,
-    "RANDOM_SEED": 67,
+    "RANDOM_SEED": 3,
     "PUISSANCE_ELEVE": 20.0,
     "PUISSANCE_TM": 2.0,
     "ELEVES_NPROBLEMS_MODE": None,
-    "WARNINGS_FILE": "{DIR}/warnings.txt"
-    }
+    "WARNINGS_FILE": "{DIR}/warnings.txt",
+    "TOLERANCE_IGI_GROUPE":True,
+    "TOLERANCE_IGI_IND":True,
+    "TOLERANCE_LANGUE":True
+}
 
 def gf_setting(key):
     """Get and format setting"""
