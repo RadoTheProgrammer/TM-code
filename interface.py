@@ -22,7 +22,7 @@ class SettingsEditor:
         """Initialise la fenêtre, les champs de configuration et les actions."""
         self.master = master
         self.master.title("TM Settings")
-        self.master.geometry("760x520")
+        self.master.state("zoomed")
         self.master.minsize(700, 420)
 
         self.original_values = {}

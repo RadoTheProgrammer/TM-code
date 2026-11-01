@@ -76,40 +76,40 @@ Warning: IGI_IND: TM 26 est marqué comme groupe mais l'élève PERS_0216 a indi
 Warning: IGI_IND: TM 2 est marqué comme groupe mais l'élève PERS_0216 a indiqué 'Individuel' (choix 2)
 Warning: IGI_IND: TM 34 est marqué comme groupe mais l'élève PERS_0219 a indiqué 'Individuel' (choix 1)
 Warning: IGI_IND: TM 28 est marqué comme groupe mais l'élève PERS_0223 a indiqué 'Individuel' (choix 1)
-Warning: Problème duo: Eleves          {PERS_0164, PERS_0031}
+Warning: Problème duo: Eleves          {PERS_0031, PERS_0164}
 Choix                                2
 ElevesAccord               {PERS_0031}
 Envies                             {2}
-Name: 44, dtype: object
-Warning: Problème duo: Eleves          {PERS_0164, PERS_0031}
+Name: 46, dtype: object
+Warning: Problème duo: Eleves          {PERS_0031, PERS_0164}
 Choix                               11
 ElevesAccord               {PERS_0031}
 Envies                             {1}
-Name: 45, dtype: object
+Name: 47, dtype: object
 Warning: Problème duo: Eleves          {PERS_0155, PERS_0031}
 Choix                               11
 ElevesAccord               {PERS_0155}
 Envies                             {1}
-Name: 111, dtype: object
+Name: 117, dtype: object
 Warning: Problème duo: Eleves          {PERS_0164, PERS_0179}
 Choix                                2
 ElevesAccord               {PERS_0179}
 Envies                             {2}
-Name: 124, dtype: object
+Name: 130, dtype: object
 Warning: Problème duo: Eleves          {PERS_0164, PERS_0179}
 Choix                                4
 ElevesAccord               {PERS_0179}
 Envies                             {1}
-Name: 125, dtype: object
+Name: 131, dtype: object
 Warning: élève PERS_0164 a peut-être mal indiqué son partenaire pour le TM 4 choix 3
 Warning: Problème duo: Eleves          {PERS_0192, PERS_0148}
 Choix                               15
 ElevesAccord               {PERS_0192}
 Envies                             {1}
-Name: 126, dtype: object
+Name: 132, dtype: object
 Warning: élève PERS_0148 a peut-être mal indiqué son partenaire pour le TM 15 choix 2
-Warning: Problème duo: Eleves          {PERS_0031, PERS_0203}
+Warning: Problème duo: Eleves          {PERS_0203, PERS_0031}
 Choix                                2
 ElevesAccord               {PERS_0203}
 Envies                             {1}
-Name: 132, dtype: object
+Name: 138, dtype: object

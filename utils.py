@@ -29,7 +29,7 @@ def func_read_csv_excel(file):
         return pd.read_csv
     
 try:
-    with open(settings_file, "r") as f:
+    with open(settings_file+"hello", "r") as f:
         settings_data = json.load(f)
 except FileNotFoundError:
     settings_data = {"DIR": "Donnees_TMs/Annee_28",

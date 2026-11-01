@@ -1,5 +1,5 @@
 import pandas as pd
-
+import utils
 
 def verify_repartition(grid_file, tm_file, duo_file, result_file):
     
@@ -7,7 +7,7 @@ def verify_repartition(grid_file, tm_file, duo_file, result_file):
     df_grid = pd.read_csv(grid_file, index_col=0)
     df_grid.index = df_grid.index.astype(str)
 
-    df_tm = pd.read_csv(tm_file, index_col=0)
+    df_tm = utils.func_read_csv_excel(tm_file)(tm_file, index_col=0)
     df_tm = df_tm[df_tm["Langue"] != "Libre"]
 
     df_result = pd.read_csv(result_file, index_col=0)
