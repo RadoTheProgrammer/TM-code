@@ -27,13 +27,26 @@ class DataError(Exception):
     pass
 
 def dataerror(message):
+    """Lève une erreur de données avec le message fourni."""
     raise DataError(message)
 
 def datawarning(message):
+    """Signale un avertissement de données."""
     warnings.append(f"Warning: {message}")
+def save_grid_outputs(df_grid, df_duo):
+    """Save warnings, agreed pairs, and the generated preference grid."""
+    with open(utils.gf_setting("WARNINGS_FILE"), "w", encoding="utf-8") as warnings_file:
+        warnings_file.write("\n".join(warnings))
+    df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
+    df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
+    df_duo.to_csv(utils.gf_setting("DUO_FILE"), index=False)
+    df_grid.to_csv(utils.gf_setting("GRID_FILE"))
+
+
 def verify_tm_file(file):
 
 
+    """Lit et valide les identifiants, langues et capacités des TMs."""
     tm_data = utils.func_read_csv_excel(file)(file)
     print(tm_data.columns)
     if tm_data.empty or tm_data.columns[0] != "N° TM":
@@ -119,6 +132,7 @@ def verify_tm_file(file):
 
 def verify_eleves_file(file, tm_data):
 
+    """Lit et valide les choix et informations de duo des élèves."""
     student_data = utils.func_read_csv_excel(file)(file, dtype=str)
     if student_data.empty or student_data.columns[0] != "Elève":
         raise utils.DataError("ELEVES_FILE doit avoir 'Elève' comme première colonne")
@@ -208,6 +222,7 @@ def verify_eleves_file(file, tm_data):
     return student_data
 
 def create_grid():
+    """Construit et enregistre la grille de préférences et les duos valides."""
     global warnings
     warnings = []
 
@@ -323,13 +338,7 @@ def create_grid():
     if not eleves_sans_choix.empty:
         raise utils.DataError(f"L'élève {list(eleves_sans_choix.index)} n'a pas de choix")
     print(f"{n} duos sur {len(df_duo)+n} non accordés")
-    with open(utils.gf_setting("WARNINGS_FILE"), "w", encoding="utf-8") as warnings_file:
-        warnings_file.write("\n".join(warnings))
-    df_duo["Eleves"] = df_duo["Eleves"].apply(lambda x: " + ".join(x))
-    df_duo["ElevesAccord"] = df_duo["ElevesAccord"].apply(lambda x: " + ".join(x))
-    df_duo.to_csv(utils.gf_setting("DUO_FILE"),index=False)
-
-    df_grid.to_csv(utils.gf_setting("GRID_FILE"))
+    save_grid_outputs(df_grid, df_duo)
 
 if __name__ == "__main__":
     create_grid()

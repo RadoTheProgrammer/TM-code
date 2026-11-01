@@ -19,6 +19,7 @@ settings_description = {
 
 class SettingsEditor:
     def __init__(self, master:tk.Tk):
+        """Initialise la fenêtre, les champs de configuration et les actions."""
         self.master = master
         self.master.title("TM Settings")
         self.master.geometry("760x520")
@@ -84,19 +85,23 @@ class SettingsEditor:
         scroll_frame.pack(fill="both", expand=True)
 
     def close(self):
+        """Arrête la génération puis ferme la fenêtre principale."""
         self.stop_generating()
         self.master.destroy()
 
     def _is_file_setting(self, name, value):
+        """Indique si un paramètre représente un chemin de fichier ou dossier."""
         if name.endswith("_FILE") or name.endswith("_DIR"):
             return True
         return False
     def stop_generating(self):
+        """Demande l'arrêt du calcul en cours et traite la boucle Tkinter."""
         self.stop_requested = True
         while self.stop_requested:
             self.master.update()
     def _build_form(self):
         
+        """Construit les champs de paramètres de la fenêtre."""
         for name in (
             "TM_FILE",
             "ELEVES_FILE",
@@ -152,6 +157,7 @@ class SettingsEditor:
             self.fields[name] = var
 
     def choose_directory(self, variable):
+        """Ouvre le sélecteur de dossier et met à jour le champ choisi."""
         current_value = variable.get()
         initial_dir = current_value if current_value else os.getcwd()
         directory = filedialog.askdirectory(
@@ -161,6 +167,7 @@ class SettingsEditor:
         if directory:
             variable.set(directory)
     def _build_results_frame(self):
+        """Construit le tableau des résultats sauvegardés."""
         if hasattr(self, "results_frame"):
             self.results_frame.destroy()
 
@@ -239,6 +246,7 @@ class SettingsEditor:
         tree.bind("<Double-1>", self.show_result_details)
 
     def show_result_details(self, event):
+        """Ouvre le d?tail d?une r?partition et affiche sa v?rification."""
         self.update_settings()
         self.create_grid()
         tree = event.widget
@@ -339,6 +347,7 @@ class SettingsEditor:
         horizontal_scrollbar.grid(row=3, column=0, sticky="ew")
 
     def _configured_path(self, name, default):
+        """Renvoie un chemin configuré par rapport au dossier du projet."""
         field = self.fields.get(name)
         configured_path = field.get() if field else self.original_values.get(name, default)
         if not configured_path:
@@ -355,6 +364,7 @@ class SettingsEditor:
         return os.path.join(directory or os.getcwd(), configured_path)
 
     def export_tree(self, tree, columns):
+        """Exporte le contenu d?un tableau Tkinter en CSV."""
         path = filedialog.asksaveasfilename(
             title="Exporter les résultats",
             defaultextension=".csv",
@@ -378,6 +388,7 @@ class SettingsEditor:
             )
 
     def _configure_sortable_tree(self, tree, columns):
+        """Configure les colonnes et le tri du tableau."""
         for column in columns:
             tree.heading(
                 column,
@@ -390,9 +401,11 @@ class SettingsEditor:
 
     @staticmethod
     def _sort_results(tree, column, reverse):
+        """Trie les lignes du tableau numériquement ou alphabétiquement."""
         items = [(tree.set(item, column), item) for item in tree.get_children("")]
 
         def sort_key(item):
+            """Construit une clé de tri numérique si possible."""
             value = item[0].strip()
             try:
                 return (0, float(value))
@@ -409,6 +422,7 @@ class SettingsEditor:
         )
 
     def choose_file(self, setting_name, variable):
+        """Ouvre le sélecteur de fichier et met à jour le champ choisi."""
         current_value = variable.get()
         initial_dir = os.path.dirname(current_value) if current_value else os.getcwd()
         filename = filedialog.askopenfilename(
@@ -420,6 +434,7 @@ class SettingsEditor:
             variable.set(filename)
 
     def create_grid(self):
+        """Construit et enregistre la grille de préférences et les duos valides."""
         grid_params_file = utils.gf_setting("GRID_PARAMS_FILE")
         grid_params_keys = ("TOLERANCE_IGI_GROUPE", "TOLERANCE_IGI_IND", "TOLERANCE_LANGUE")
         try:
@@ -440,6 +455,7 @@ class SettingsEditor:
             with open(grid_params_file, "w") as f:
                 json.dump(new_grid_params, f)
     def generate(self):
+        """Démarre la génération ou demande son arrêt."""
         if self.generating:
             self.progress_text.set("Arrêt de la génération ...")
             self.stop_generating()
@@ -462,6 +478,7 @@ class SettingsEditor:
             threading.Thread(target=self._run_generation, daemon=True).start()
 
     def update_settings(self):
+        """Copie les champs de l'interface dans les param?tres et les enregistre."""
         for name, var in self.fields.items():
             value = var.get()
             if isinstance(value,str) and value.isdigit():
@@ -470,6 +487,7 @@ class SettingsEditor:
 
         utils.save_settings()
     def _run_generation(self):
+        """Exécute l'algorithme dans le fil de travail."""
         try:
             if self.fields.get("DIR") is None:
                 raise ValueError("Le répertoire de travail n'est pas configuré.")
@@ -491,6 +509,7 @@ class SettingsEditor:
             self.master.after(0, self._generation_finished, None)
 
     def _generation_finished(self, error):
+        """Rétablit l'interface et signale le résultat de la génération."""
         self.generate_button.configure(text="Générer")
         self.progress_text.set("")
         if error is None:
@@ -502,7 +521,9 @@ class SettingsEditor:
             )
         self.generating = False
     def update_progress(self, data_single,temps_moyen):
+        """Programme la mise à jour du tableau et du statut de progression."""
         def insert_row():
+            """Ajoute le résultat courant au tableau de l'interface."""
             tree = getattr(self, "results_tree", None)
             if tree is None:
                 return

@@ -3,6 +3,7 @@ import pandas as pd
 
 def verify_repartition(grid_file, tm_file, duo_file, result_file):
     
+    """Vérifie les choix, les capacités des TMs et les affectations en duo."""
     df_grid = pd.read_csv(grid_file, index_col=0)
     df_grid.index = df_grid.index.astype(str)
 
@@ -84,6 +85,7 @@ def verify_repartition(grid_file, tm_file, duo_file, result_file):
 
 
 def main():
+    """Affiche les problèmes de la répartition configurée."""
     for problem in verify_repartition(
         "Donnees_TMs/Annee_28/grid.csv",
         "Donnees_TMs/Annee_28/liste_sujets.csv",

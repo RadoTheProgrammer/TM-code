@@ -6,12 +6,15 @@ class DataError(Exception):
     pass
 
 def dataerror(message):
+    """Lève une erreur de données avec le message fourni."""
     raise DataError(message)
 
 def datawarning(message):
+    """Signale un avertissement de données."""
     print(f"Warning: {message}")
 
 def func_read_csv_excel(file):
+    """Retourne le lecteur adapté au format du fichier."""
     if file.endswith(".csv"):
         return pd.read_csv
     elif file.endswith(".xlsx"):
@@ -52,9 +55,11 @@ def gf_setting(key):
 
     return format_setting(value)
 def format_setting(value):
+    """D?veloppe les r?f?rences de param?tres dans une cha?ne."""
     if isinstance(value, str):
         return value.format(**settings_data).format(**settings_data)
     return value
 def save_settings():
+    """Enregistre les param?tres courants dans le fichier JSON."""
     with open(os.path.expanduser("tm-settings.json"), "w") as f:
         json.dump(settings_data, f, indent=4)

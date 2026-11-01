@@ -20,6 +20,7 @@ ELEVES_WEIGHTS_MODE = False  # Mode de calcul des poids pour les élèves
 
 
 def setup():
+    """Charge les fichiers et initialise les données globales de génération."""
     global data, df_grid_orig, nproblems_eleves, default_df, df_tm
     global nproblems_tm, df_duo, i_try, results, nrep
 
@@ -87,6 +88,7 @@ def numpy_sample(population, weights, k):
 
 
 def generate_single():
+    """Construit une répartition complète et calcule ses indicateurs."""
     global max_l2,best_mean,best_std
     
     """Génère une tentative d'attribution pour tous les TMs.
@@ -115,6 +117,7 @@ def generate_single():
 
         # df_tm_shuffled = df_tm.iloc[np.argsort(keys)]
         # return df_tm_shuffled
+        """Ordonne les TMs par tirage pondéré selon leur historique."""
         puissance_tm = utils.gf_setting("PUISSANCE_TM")
         if not isinstance(puissance_tm, (int, float)):
             raise TypeError("PUISSANCE_TM must be numeric")
@@ -124,6 +127,7 @@ def generate_single():
     def select_candidates():
         #selected_index = numpy_sample(candidats.index, weights, max(0, int(minimum-len(forced))), rng)
         #print(weights.values)
+        """Sélectionne des candidats individuels selon leurs poids."""
         puissance_eleve = utils.gf_setting("PUISSANCE_ELEVE")
         if not isinstance(puissance_eleve, (int, float)):
             raise TypeError("PUISSANCE_ELEVE must be numeric")
@@ -312,6 +316,7 @@ def generate_single():
 
 
 def generate(interface_object=None):
+    """Démarre la génération ou demande son arrêt."""
     global results,nrep,df_grid_orig
 
     setup()
