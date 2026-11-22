@@ -16,7 +16,7 @@ settings_description = {
 class SettingsEditor:
     def __init__(self, master:tk.Tk):
         self.master = master
-        self.master.title("TM Settings")
+        self.master.title("Répartiteur de travaux de maturité")
         self.master.geometry("760x520")
         self.master.minsize(700, 420)
 
@@ -29,7 +29,7 @@ class SettingsEditor:
         main = ttk.Frame(master, padding=12)
         main.pack(fill="both", expand=True)
 
-        title = ttk.Label(main, text="Paramètres du projet", font=("Segoe UI", 12, "bold"))
+        title = ttk.Label(main, text="Répartiteur de travaux de maturité", font=("Segoe UI", 12, "bold"))
         title.pack(anchor="w", pady=(0, 10))
 
         scroll_frame = ttk.Frame(main)

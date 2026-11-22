@@ -24,6 +24,9 @@ import numpy as np
 
 warnings = []
 
+TOLERANCE_IND_IN_GROUPE = True
+TOLERANCE_GROUPE_IN_IND = True
+TOLERANCE_LANGUE = True
 
 class DataError(Exception):
     pass
@@ -257,6 +260,7 @@ for nom_eleve,eleve in df.iterrows():
         if ind_ou_duo=="Individuel":
             if igi==IGI_GROUPE:
                 datawarning(f"TM {choix} est marqué comme groupe mais l'élève {nom_eleve} a indiqué 'Individuel' (choix {nchoix})")
+                
                 continue
             df_grid.at[nom_eleve,choix] = envie
         else:
